@@ -1,0 +1,78 @@
+<svg width="100%" viewBox="0 0 680 620" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>prosjekt-oyenstikker architecture</title>
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="#888780" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+<!-- Windows host -->
+<rect x="30" y="24" width="560" height="570" rx="16" fill="#F1EFE8" stroke="#B4B2A9" stroke-width="0.5"/>
+<text x="50" y="50" font-family="monospace" font-size="13" font-weight="500" fill="#2C2C2A">Windows host (MSI)</text>
+<text x="50" y="66" font-family="monospace" font-size="11" fill="#5F5E5A">WSL2 Ubuntu 24 · /mnt/d/Projects/memory-system</text>
+<!-- Docker Compose -->
+<rect x="50" y="82" width="520" height="320" rx="12" fill="#E6F1FB" stroke="#85B7EB" stroke-width="0.5"/>
+<text x="70" y="106" font-family="monospace" font-size="13" font-weight="500" fill="#0C447C">Docker Compose</text>
+<text x="70" y="122" font-family="monospace" font-size="11" fill="#185FA5">docker-compose.yml · multi-service deployment</text>
+<!-- pgvector -->
+<rect x="70" y="136" width="220" height="100" rx="8" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="0.5"/>
+<text x="180" y="164" font-family="monospace" font-size="12" font-weight="500" fill="#085041" text-anchor="middle">PostgreSQL + pgvector</text>
+<text x="180" y="180" font-family="monospace" font-size="11" fill="#0F6E56" text-anchor="middle">vector-db container</text>
+<text x="180" y="196" font-family="monospace" font-size="11" fill="#0F6E56" text-anchor="middle">init.sql · port 5432</text>
+<text x="180" y="212" font-family="monospace" font-size="11" fill="#0F6E56" text-anchor="middle">127.0.0.1 only</text>
+<!-- FastAPI -->
+<rect x="330" y="136" width="220" height="100" rx="8" fill="#EEEDFE" stroke="#AFA9EC" stroke-width="0.5"/>
+<text x="440" y="164" font-family="monospace" font-size="12" font-weight="500" fill="#26215C" text-anchor="middle">FastAPI</text>
+<text x="440" y="180" font-family="monospace" font-size="11" fill="#3C3489" text-anchor="middle">fuse.py · port 8000</text>
+<text x="440" y="196" font-family="monospace" font-size="11" fill="#3C3489" text-anchor="middle">/ingest /search /ask</text>
+<text x="440" y="212" font-family="monospace" font-size="11" fill="#3C3489" text-anchor="middle">API key auth · rate limit</text>
+<!-- Arrow pgvector <-> FastAPI -->
+<line x1="290" y1="183" x2="328" y2="183" stroke="#888780" stroke-width="0.5" marker-end="url(#arrow)"/>
+<line x1="328" y1="193" x2="290" y2="193" stroke="#888780" stroke-width="0.5" marker-end="url(#arrow)"/>
+<!-- sentence-transformers -->
+<rect x="70" y="256" width="220" height="70" rx="8" fill="#FAECE7" stroke="#F0997B" stroke-width="0.5"/>
+<text x="180" y="280" font-family="monospace" font-size="12" font-weight="500" fill="#4A1B0C" text-anchor="middle">sentence-transformers</text>
+<text x="180" y="296" font-family="monospace" font-size="11" fill="#712B13" text-anchor="middle">fuse.py · text → vectors</text>
+<text x="180" y="312" font-family="monospace" font-size="11" fill="#712B13" text-anchor="middle">all-MiniLM-L6-v2</text>
+<!-- RAG pipeline -->
+<rect x="330" y="256" width="220" height="70" rx="8" fill="#FAEEDA" stroke="#EF9F27" stroke-width="0.5"/>
+<text x="440" y="280" font-family="monospace" font-size="12" font-weight="500" fill="#412402" text-anchor="middle">RAG pipeline</text>
+<text x="440" y="296" font-family="monospace" font-size="11" fill="#633806" text-anchor="middle">query → semantic search</text>
+<text x="440" y="312" font-family="monospace" font-size="11" fill="#633806" text-anchor="middle">→ LLM response</text>
+<!-- Arrows -->
+<line x1="180" y1="256" x2="180" y2="238" stroke="#888780" stroke-width="0.5" marker-end="url(#arrow)"/>
+<line x1="440" y1="256" x2="440" y2="238" stroke="#888780" stroke-width="0.5" marker-end="url(#arrow)"/>
+<line x1="292" y1="288" x2="328" y2="288" stroke="#888780" stroke-width="0.5" marker-end="url(#arrow)"/>
+<!-- Ollama -->
+<rect x="50" y="420" width="520" height="130" rx="12" fill="#EAF3DE" stroke="#97C459" stroke-width="0.5"/>
+<text x="70" y="444" font-family="monospace" font-size="13" font-weight="500" fill="#173404">Ollama LLM runtime</text>
+<text x="70" y="460" font-family="monospace" font-size="11" fill="#27500A">native WSL2 · ~14GB · port 11434</text>
+<!-- Models -->
+<rect x="70" y="470" width="108" height="44" rx="6" fill="#EAF3DE" stroke="#639922" stroke-width="0.5"/>
+<text x="124" y="490" font-family="monospace" font-size="11" font-weight="500" fill="#173404" text-anchor="middle">mistral:7b</text>
+<text x="124" y="506" font-family="monospace" font-size="10" fill="#27500A" text-anchor="middle">4.4 GB</text>
+<rect x="194" y="470" width="108" height="44" rx="6" fill="#EAF3DE" stroke="#639922" stroke-width="0.5"/>
+<text x="248" y="490" font-family="monospace" font-size="11" font-weight="500" fill="#173404" text-anchor="middle">llama3.1:8b</text>
+<text x="248" y="506" font-family="monospace" font-size="10" fill="#27500A" text-anchor="middle">4.9 GB</text>
+<rect x="318" y="470" width="108" height="44" rx="6" fill="#EAF3DE" stroke="#639922" stroke-width="0.5"/>
+<text x="372" y="490" font-family="monospace" font-size="11" font-weight="500" fill="#173404" text-anchor="middle">phi4-mini</text>
+<text x="372" y="506" font-family="monospace" font-size="10" fill="#27500A" text-anchor="middle">2.5 GB</text>
+<rect x="442" y="470" width="108" height="44" rx="6" fill="#EAF3DE" stroke="#639922" stroke-width="0.5"/>
+<text x="496" y="490" font-family="monospace" font-size="11" font-weight="500" fill="#173404" text-anchor="middle">phi3:mini</text>
+<text x="496" y="506" font-family="monospace" font-size="10" fill="#27500A" text-anchor="middle">2.2 GB</text>
+<!-- Arrow RAG <-> Ollama -->
+<line x1="440" y1="328" x2="440" y2="418" stroke="#888780" stroke-width="0.5" marker-end="url(#arrow)"/>
+<line x1="430" y1="418" x2="430" y2="328" stroke="#888780" stroke-width="0.5" marker-end="url(#arrow)"/>
+<!-- EPA data -->
+<rect x="50" y="560" width="200" height="28" rx="6" fill="#F1EFE8" stroke="#B4B2A9" stroke-width="0.5"/>
+<text x="150" y="578" font-family="monospace" font-size="11" font-weight="500" fill="#2C2C2A" text-anchor="middle">EPA PM2.5 · Vinton CSV</text>
+<path d="M150 560 L150 540 L440 540 L440 410" fill="none" stroke="#B4B2A9" stroke-width="0.5" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+<!-- Portable note -->
+<rect x="310" y="560" width="260" height="28" rx="6" fill="#F1EFE8" stroke="#B4B2A9" stroke-width="0.5"/>
+<text x="440" y="578" font-family="monospace" font-size="11" font-weight="500" fill="#2C2C2A" text-anchor="middle">portable: 3 files → any Linux VM</text>
+<!-- Client -->
+<rect x="596" y="155" width="72" height="44" rx="8" fill="#E6F1FB" stroke="#85B7EB" stroke-width="0.5"/>
+<text x="632" y="175" font-family="monospace" font-size="11" font-weight="500" fill="#0C447C" text-anchor="middle">client</text>
+<text x="632" y="191" font-family="monospace" font-size="10" fill="#185FA5" text-anchor="middle">HTTP/curl</text>
+<line x1="596" y1="173" x2="552" y2="173" stroke="#888780" stroke-width="0.5" marker-end="url(#arrow)"/>
+<line x1="552" y1="183" x2="596" y2="183" stroke="#888780" stroke-width="0.5" marker-end="url(#arrow)"/>
+</svg>
