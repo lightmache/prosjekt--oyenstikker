@@ -1,16 +1,20 @@
 import os
+import json
+import uuid
+import requests
+from datetime import datetime
+from typing import List, Optional
+from dotenv import load_dotenv
+
+load_dotenv()
+
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sentence_transformers import SentenceTransformer
-from datetime import datetime
-from typing import List, Optional
 import psycopg2
-import json
-import requests
-import uuid
 
 app = FastAPI()
 
@@ -24,13 +28,13 @@ app.add_middleware(
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
 conn = psycopg2.connect(
-    host="localhost",
-    database="memory",
-    user="postgres",
-    password="postgres"
+    host=os.getenv("POSTGRES_HOST", "localhost"),
+    database=os.getenv("POSTGRES_DB", "memory"),
+    user=os.getenv("POSTGRES_USER", "postgres"),
+    password=os.getenv("POSTGRES_PASSWORD", "postgres")
 )
 
-SESSIONS_DIR = "/mnt/d/Projects/memory-system/sessions"
+SESSIONS_DIR = os.getenv("SESSIONS_DIR", "./sessions")
 os.makedirs(SESSIONS_DIR, exist_ok=True)
 
 MODEL_PARAMS = {
@@ -42,7 +46,7 @@ MODEL_PARAMS = {
 
 DEFAULT_PARAMS = {
     "short": {"temperature": 0.2, "num_predict": 200},
-    "long": {"temperature": 0.5, "num_predict": 500}
+    "long":  {"temperature": 0.5, "num_predict": 500}
 }
 
 CONVERSATION_TRIGGERS = [
@@ -156,7 +160,6 @@ def ask(question: Question):
 
     conv_mode = is_conversation_question(question.q)
 
-    # Build history text
     history_text = ""
     if question.history:
         recent = question.history[-12:] if conv_mode else question.history[-6:]
@@ -166,7 +169,6 @@ def ask(question: Question):
             history_text += f"{prefix}: {msg.content}\n"
 
     if conv_mode:
-        # History-only mode — skip KB retrieval
         context_chunks = []
         prompt = (
             "Respond in plain text only. No HTML, no markdown, no code blocks.\n\n"
@@ -178,7 +180,6 @@ def ask(question: Question):
             "Answer:"
         )
     else:
-        # Normal RAG mode — retrieve KB context
         embedding = model.encode(question.q).tolist()
         cur = conn.cursor()
         cur.execute(
@@ -202,15 +203,18 @@ def ask(question: Question):
             "Answer:"
         )
 
-    response = requests.post("http://localhost:11434/api/generate", json={
-        "model": question.model,
-        "prompt": prompt,
-        "stream": False,
-        "options": {
-            "temperature": params["temperature"],
-            "num_predict": params["num_predict"]
+    response = requests.post(
+        os.getenv("OLLAMA_HOST", "http://localhost:11434") + "/api/generate",
+        json={
+            "model": question.model,
+            "prompt": prompt,
+            "stream": False,
+            "options": {
+                "temperature": params["temperature"],
+                "num_predict": params["num_predict"]
+            }
         }
-    })
+    )
 
     answer = response.json()["response"]
 
