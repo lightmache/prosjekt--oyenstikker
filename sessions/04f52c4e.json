@@ -1,0 +1,98 @@
+{
+  "id": "04f52c4e",
+  "name": "2026-06-03 20:15",
+  "created": "2026-06-03T20:15:50.511947",
+  "updated": "2026-06-06T07:32:09.827065",
+  "history": [
+    {
+      "role": "user",
+      "content": "what",
+      "timestamp": "2026-06-03T21:27:20.379915"
+    },
+    {
+      "role": "assistant",
+      "content": "Oyenstikker is a research assistant with access to personal knowledge base information relevant only within provided context and conversation history; outside this scope requires data ingestion for accurate responses. If the query pertains to Claude, Anthropic's AI developed by OpenAI as an alternative or competitor of ChatGPT focusing on long-context document analysis with a safety-first approach in design philosophy is relevant information based on context provided above.",
+      "timestamp": "2026-06-03T21:27:20.379990"
+    },
+    {
+      "role": "user",
+      "content": "hi",
+      "timestamp": "2026-06-03T21:59:28.781115"
+    },
+    {
+      "role": "assistant",
+      "content": "Salut! Comment puis-je vous aider aujourd'hui?",
+      "timestamp": "2026-06-03T21:59:28.781140"
+    },
+    {
+      "role": "user",
+      "content": "hi",
+      "timestamp": "2026-06-03T22:03:05.039719"
+    },
+    {
+      "role": "assistant",
+      "content": "Salut! Comment puis-moi aider aujourd'hui?",
+      "timestamp": "2026-06-03T22:03:05.039735"
+    },
+    {
+      "role": "user",
+      "content": "je suis bein",
+      "timestamp": "2026-06-03T22:03:19.764675"
+    },
+    {
+      "role": "assistant",
+      "content": "Je suis d\u00e9sol\u00e9, mais \"bein\" n'est pas une langue que j'ai dans ma base de connaissances. Pour obtenir des informations en fran\u00e7ais ou sur un sujet sp\u00e9cifique li\u00e9 \u00e0 la France, veuillez fournir plus d'informations ou reformuler votre demande.",
+      "timestamp": "2026-06-03T22:03:19.764689"
+    },
+    {
+      "role": "user",
+      "content": "hi",
+      "timestamp": "2026-06-03T22:08:34.770445"
+    },
+    {
+      "role": "assistant",
+      "content": "Salut! Comment puis-moi aider aujourd'hui?",
+      "timestamp": "2026-06-03T22:08:34.770458"
+    },
+    {
+      "role": "user",
+      "content": "hi",
+      "timestamp": "2026-06-03T22:14:24.114228"
+    },
+    {
+      "role": "assistant",
+      "content": "Salut! Comment puis-moi aider aujourd'hui?",
+      "timestamp": "2026-06-03T22:14:24.114247"
+    },
+    {
+      "role": "user",
+      "content": "que",
+      "timestamp": "2026-06-03T22:23:22.103553"
+    },
+    {
+      "role": "assistant",
+      "content": "Je suis d\u00e9sol\u00e9, mais \"que\" n'est pas une langue que j'ai dans ma base de connaissances. Pour obtenir des informations en fran\u00e7ais ou sur un sujet sp\u00e9cifique li\u00e9 \u00e0 la France, veuillez fournir plus d'informations ou reformuler votre demande.",
+      "timestamp": "2026-06-03T22:23:22.103567"
+    },
+    {
+      "role": "user",
+      "content": "hi",
+      "timestamp": "2026-06-05T21:20:09.285851"
+    },
+    {
+      "role": "assistant",
+      "content": "Bonjour ! Comment puis-je vous aider aujourd'hui ?",
+      "timestamp": "2026-06-05T21:20:09.317961"
+    },
+    {
+      "role": "user",
+      "content": "je besoin aider vu avec coding",
+      "timestamp": "2026-06-06T07:32:09.826784"
+    },
+    {
+      "role": "assistant",
+      "content": "Je serais heureux de vous aider avec le codage. Pourriez-vous sp\u00e9cifier quel langage de programmation vous utilisez et quelle assistance sp\u00e9cifique avez-vous besoin ? (par exemple, r\u00e9soudre un probl\u00e8me en Python, JavaScript, C++, etc.)",
+      "timestamp": "2026-06-06T07:32:09.827062"
+    }
+  ]
+}

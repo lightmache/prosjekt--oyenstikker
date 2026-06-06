@@ -1,0 +1,431 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1K00.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<Product_Observational xmlns="http://pds.nasa.gov/pds4/pds/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pds.nasa.gov/pds4/pds/v1 https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1K00.xsd">
+  <Identification_Area>
+    <logical_identifier>urn:nasa:pds:ladee_ldex:data_derived:derived_ldex_ltden_pds_derived_tab</logical_identifier>
+    <version_id>2.0</version_id>
+    <title>DENSITY</title>
+    <information_model_version>1.20.0.0</information_model_version>
+    <product_class>Product_Observational</product_class>
+  </Identification_Area>
+  <Observation_Area>
+    <Time_Coordinates>
+      <start_date_time>2013-10-25T00:00:00Z</start_date_time>
+      <stop_date_time>2014-04-18T04:30:00Z</stop_date_time>
+    </Time_Coordinates>
+    <Primary_Result_Summary>
+      <purpose>Science</purpose>
+      <processing_level>Derived</processing_level>
+      <Science_Facets>
+        <domain>Atmosphere</domain>
+        <discipline_name>Small Bodies</discipline_name>
+        <facet1>Dust Study</facet1>
+      </Science_Facets>
+    </Primary_Result_Summary>
+    <Investigation_Area>
+      <name>LADEE</name>
+      <type>Mission</type>
+      <Internal_Reference>
+        <lid_reference>urn:nasa:pds:context:investigation:mission.ladee</lid_reference>
+        <reference_type>data_to_investigation</reference_type>
+      </Internal_Reference>
+    </Investigation_Area>
+    <Observing_System>
+      <description>LADEE with LUNAR DUST EXPERIMENT</description>
+      <Observing_System_Component>
+        <name>LUNAR DUST EXPERIMENT</name>
+        <type>Instrument</type>
+        <description>The LADEE Lunar Dust Experiment (LDEX) instrument description is included 
+    in section 3 of the LADEE LDEX Software Interface Specification (SIS) file
+    'ldex_pds_sis_revX.pdf' in the document collection of the LADEE Mission      
+    bundle.</description>
+        <Internal_Reference>
+          <lid_reference>urn:nasa:pds:context:instrument:ladee.ldex</lid_reference>
+          <reference_type>is_instrument</reference_type>
+        </Internal_Reference>
+      </Observing_System_Component>
+      <Observing_System_Component>
+        <name>LADEE</name>
+        <type>Host</type>
+        <description>The LADEE spacecraft description document is included in the file
+'ladee_spacecraft_revX.pdf' in the document collection of the
+LADEE Mission bundle.</description>
+        <Internal_Reference>
+          <lid_reference>urn:nasa:pds:context:instrument_host:spacecraft.ladee</lid_reference>
+          <reference_type>is_instrument_host</reference_type>
+        </Internal_Reference>
+      </Observing_System_Component>
+    </Observing_System>
+    <Target_Identification>
+      <name>Dust</name>
+      <type>Dust</type>
+      <Internal_Reference>
+        <lid_reference>urn:nasa:pds:context:target:dust.dust</lid_reference>
+        <reference_type>data_to_target</reference_type>
+      </Internal_Reference>
+    </Target_Identification>
+    <Target_Identification>
+      <name>Moon</name>
+      <type>Satellite</type>
+      <Internal_Reference>
+        <lid_reference>urn:nasa:pds:context:target:satellite.earth.moon</lid_reference>
+        <reference_type>data_to_target</reference_type>
+      </Internal_Reference>
+    </Target_Identification>
+  </Observation_Area>
+  <Reference_List>
+    <Internal_Reference>
+      <lid_reference>urn:nasa:pds:ladee_ldex:document:bundle_description</lid_reference>
+      <reference_type>data_to_document</reference_type>
+    </Internal_Reference>
+    <External_Reference>
+      <reference_text>HORYANIETAL2014</reference_text>
+      <description>Horyani, M., Z. Sternovsky, M. Lankton, 
+        C. Dumont, S. Gagnard, D. Gathright, E. Grun, D. Hansen, D. James, S. 
+        Kempf, B. Lamprecht, R. Srama, J. R. Szalay, and G. Wright, The Lunar 
+        Dust Experiment (LDEX) onboard the Lunar Atmosphere and Dust          
+        Environment Explorer (LADEE) Mission, Space Science Reviews, 185      
+        (104), 93-113, doi:10.1007/s11214-014-0118-7, 2014.</description>
+    </External_Reference>
+  </Reference_List>
+  <File_Area_Observational>
+    <File>
+      <file_name>ldex_ltden_pds_derived.tab</file_name>
+      <local_identifier>DERIVED_LDEX_LTDEN_PDS_DERIVED_TAB</local_identifier>
+      <file_size unit="byte">5928</file_size>
+      <records>26</records>
+    </File>
+    <Table_Character>
+      <local_identifier>TABLE</local_identifier>
+      <offset unit="byte">0</offset>
+      <records>26</records>
+      <description>The LDEX derived dust density in the    
+        lunar exosphere for grains with radii greater than 0.3 microns.</description>
+      <record_delimiter>Carriage-Return Line-Feed</record_delimiter>
+      <Record_Character>
+        <fields>23</fields>
+        <groups>0</groups>
+        <record_length unit="byte">228</record_length>
+        <Field_Character>
+          <name>ALTITUDE</name>
+          <field_number>1</field_number>
+          <field_location unit="byte">1</field_location>
+          <data_type>ASCII_Real</data_type>
+          <field_length unit="byte">6</field_length>
+          <field_format>%6.2f</field_format>
+          <unit>Km</unit>
+          <description>The altitude above the lunar surface.</description>
+        </Field_Character>
+        <Field_Character>
+          <name>DENSITY_0000_LT</name>
+          <field_number>2</field_number>
+          <field_location unit="byte">7</field_location>
+          <data_type>ASCII_Real</data_type>
+          <field_length unit="byte">9</field_length>
+          <field_format>%9.2e</field_format>
+          <unit>M**-3</unit>
+          <description>The lunar dust density at 00:00 local   
+        time.</description>
+          <Special_Constants>
+            <missing_constant>-9.99E+00</missing_constant>
+          </Special_Constants>
+        </Field_Character>
+        <Field_Character>
+          <name>ERROR_0000_LT</name>
+          <field_number>3</field_number>
+          <field_location unit="byte">17</field_location>
+          <data_type>ASCII_Real</data_type>
+          <field_length unit="byte">9</field_length>
+          <field_format>%9.2e</field_format>
+          <unit>M**-3</unit>
+          <description>The lunar dust density error at 00:00   
+        local time.</description>
+          <Special_Constants>
+            <missing_constant>-9.99E+00</missing_constant>
+          </Special_Constants>
+        </Field_Character>
+        <Field_Character>
+          <name>DENSITY_0130_LT</name>
+          <field_number>4</field_number>
+          <field_location unit="byte">27</field_location>
+          <data_type>ASCII_Real</data_type>
+          <field_length unit="byte">9</field_length>
+          <field_format>%9.2e</field_format>
+          <unit>M**-3</unit>
+          <description>The lunar dust density at 01:30 local   
+        time.</description>
+          <Special_Constants>
+            <missing_constant>-9.99E+00</missing_constant>
+          </Special_Constants>
+        </Field_Character>
+        <Field_Character>
+          <name>ERROR_0130_LT</name>
+          <field_number>5</field_number>
+          <field_location unit="byte">37</field_location>
+          <data_type>ASCII_Real</data_type>
+          <field_length unit="byte">9</field_length>
+          <field_format>%9.2e</field_format>
+          <unit>M**-3</unit>
+          <description>The lunar dust density error at 01:30   
+        local time.</description>
+          <Special_Constants>
+            <missing_constant>-9.99E+00</missing_constant>
+          </Special_Constants>
+        </Field_Character>
+        <Field_Character>
+          <name>DENSITY_0300_LT</name>
+          <field_number>6</field_number>
+          <field_location unit="byte">47</field_location>
+          <data_type>ASCII_Real</data_type>
+          <field_length unit="byte">9</field_length>
+          <field_format>%9.2e</field_format>
+          <unit>M**-3</unit>
+          <description>The lunar dust density at 03:00 local   
+        time.</description>
+          <Special_Constants>
+            <missing_constant>-9.99E+00</missing_constant>
+          </Special_Constants>
+        </Field_Character>
+        <Field_Character>
+          <name>ERROR_0300_LT</name>
+          <field_number>7</field_number>
+          <field_location unit="byte">57</field_location>
+          <data_type>ASCII_Real</data_type>
+          <field_length unit="byte">9</field_length>
+          <field_format>%9.2e</field_format>
+          <unit>M**-3</unit>
+          <description>The lunar dust density error at 03:00   
+        local time.</description>
+          <Special_Constants>
+            <missing_constant>-9.99E+00</missing_constant>
+          </Special_Constants>
+        </Field_Character>
+        <Field_Character>
+          <name>DENSITY_0430_LT</name>
+          <field_number>8</field_number>
+          <field_location unit="byte">67</field_location>
+          <data_type>ASCII_Real</data_type>
+          <field_length unit="byte">9</field_length>
+          <field_format>%9.2e</field_format>
+          <unit>M**-3</unit>
+          <description>The lunar dust density at 04:30 local   
+        time.</description>
+          <Special_Constants>
+            <missing_constant>-9.99E+00</missing_constant>
+          </Special_Constants>
+        </Field_Character>
+        <Field_Character>
+          <name>ERROR_0430_LT</name>
+          <field_number>9</field_number>
+          <field_location unit="byte">77</field_location>
+          <data_type>ASCII_Real</data_type>
+          <field_length unit="byte">9</field_length>
+          <field_format>%9.2e</field_format>
+          <unit>M**-3</unit>
+          <description>The lunar dust density error at 04:30   
+        local time.</description>
+          <Special_Constants>
+            <missing_constant>-9.99E+00</missing_constant>
+          </Special_Constants>
+        </Field_Character>
+        <Field_Character>
+          <name>DENSITY_0600_LT</name>
+          <field_number>10</field_number>
+          <field_location unit="byte">87</field_location>
+          <data_type>ASCII_Real</data_type>
+          <field_length unit="byte">9</field_length>
+          <field_format>%9.2e</field_format>
+          <unit>M**-3</unit>
+          <description>The lunar dust density at 06:00 local   
+        time.</description>
+          <Special_Constants>
+            <missing_constant>-9.99E+00</missing_constant>
+          </Special_Constants>
+        </Field_Character>
+        <Field_Character>
+          <name>ERROR_0600_LT</name>
+          <field_number>11</field_number>
+          <field_location unit="byte">97</field_location>
+          <data_type>ASCII_Real</data_type>
+          <field_length unit="byte">9</field_length>
+          <field_format>%9.2e</field_format>
+          <unit>M**-3</unit>
+          <description>The lunar dust density error at 06:00   
+        local time.</description>
+          <Special_Constants>
+            <missing_constant>-9.99E+00</missing_constant>
+          </Special_Constants>
+        </Field_Character>
+        <Field_Character>
+          <name>DENSITY_0730_LT</name>
+          <field_number>12</field_number>
+          <field_location unit="byte">107</field_location>
+          <data_type>ASCII_Real</data_type>
+          <field_length unit="byte">9</field_length>
+          <field_format>%9.2e</field_format>
+          <unit>M**-3</unit>
+          <description>The lunar dust density at 07:30 local   
+        time.</description>
+          <Special_Constants>
+            <missing_constant>-9.99E+00</missing_constant>
+          </Special_Constants>
+        </Field_Character>
+        <Field_Character>
+          <name>ERROR_0730_LT</name>
+          <field_number>13</field_number>
+          <field_location unit="byte">117</field_location>
+          <data_type>ASCII_Real</data_type>
+          <field_length unit="byte">9</field_length>
+          <field_format>%9.2e</field_format>
+          <unit>M**-3</unit>
+          <description>The lunar dust density error at 07:30   
+        local time.</description>
+          <Special_Constants>
+            <missing_constant>-9.99E+00</missing_constant>
+          </Special_Constants>
+        </Field_Character>
+        <Field_Character>
+          <name>DENSITY_0900_LT</name>
+          <field_number>14</field_number>
+          <field_location unit="byte">127</field_location>
+          <data_type>ASCII_Real</data_type>
+          <field_length unit="byte">9</field_length>
+          <field_format>%9.2e</field_format>
+          <unit>M**-3</unit>
+          <description>The lunar dust density at 09:00 local   
+        time.</description>
+          <Special_Constants>
+            <missing_constant>-9.99E+00</missing_constant>
+          </Special_Constants>
+        </Field_Character>
+        <Field_Character>
+          <name>ERROR_0900_LT</name>
+          <field_number>15</field_number>
+          <field_location unit="byte">137</field_location>
+          <data_type>ASCII_Real</data_type>
+          <field_length unit="byte">9</field_length>
+          <field_format>%9.2e</field_format>
+          <unit>M**-3</unit>
+          <description>The lunar dust density error at 09:00   
+        local time.</description>
+          <Special_Constants>
+            <missing_constant>-9.99E+00</missing_constant>
+          </Special_Constants>
+        </Field_Character>
+        <Field_Character>
+          <name>DENSITY_1030_LT</name>
+          <field_number>16</field_number>
+          <field_location unit="byte">147</field_location>
+          <data_type>ASCII_Real</data_type>
+          <field_length unit="byte">9</field_length>
+          <field_format>%9.2e</field_format>
+          <unit>M**-3</unit>
+          <description>The lunar dust density at 10:30 local   
+        time.</description>
+          <Special_Constants>
+            <missing_constant>-9.99E+00</missing_constant>
+          </Special_Constants>
+        </Field_Character>
+        <Field_Character>
+          <name>ERROR_1030_LT</name>
+          <field_number>17</field_number>
+          <field_location unit="byte">157</field_location>
+          <data_type>ASCII_Real</data_type>
+          <field_length unit="byte">9</field_length>
+          <field_format>%9.2e</field_format>
+          <unit>M**-3</unit>
+          <description>The lunar dust density error at 10:30   
+        local time.</description>
+          <Special_Constants>
+            <missing_constant>-9.99E+00</missing_constant>
+          </Special_Constants>
+        </Field_Character>
+        <Field_Character>
+          <name>DENSITY_1930_LT</name>
+          <field_number>18</field_number>
+          <field_location unit="byte">167</field_location>
+          <data_type>ASCII_Real</data_type>
+          <field_length unit="byte">9</field_length>
+          <field_format>%9.2e</field_format>
+          <unit>M**-3</unit>
+          <description>The lunar dust density at 19:30 local   
+        time.</description>
+          <Special_Constants>
+            <missing_constant>-9.99E+00</missing_constant>
+          </Special_Constants>
+        </Field_Character>
+        <Field_Character>
+          <name>ERROR_1930_LT</name>
+          <field_number>19</field_number>
+          <field_location unit="byte">177</field_location>
+          <data_type>ASCII_Real</data_type>
+          <field_length unit="byte">9</field_length>
+          <field_format>%9.2e</field_format>
+          <unit>M**-3</unit>
+          <description>The lunar dust density error at 19:30   
+        local time.</description>
+          <Special_Constants>
+            <missing_constant>-9.99E+00</missing_constant>
+          </Special_Constants>
+        </Field_Character>
+        <Field_Character>
+          <name>DENSITY_2100_LT</name>
+          <field_number>20</field_number>
+          <field_location unit="byte">187</field_location>
+          <data_type>ASCII_Real</data_type>
+          <field_length unit="byte">9</field_length>
+          <field_format>%9.2e</field_format>
+          <unit>M**-3</unit>
+          <description>The lunar dust density at 21:00 local   
+        time.</description>
+          <Special_Constants>
+            <missing_constant>-9.99E+00</missing_constant>
+          </Special_Constants>
+        </Field_Character>
+        <Field_Character>
+          <name>ERROR_2100_LT</name>
+          <field_number>21</field_number>
+          <field_location unit="byte">197</field_location>
+          <data_type>ASCII_Real</data_type>
+          <field_length unit="byte">9</field_length>
+          <field_format>%9.2e</field_format>
+          <unit>M**-3</unit>
+          <description>The lunar dust density error at 21:00   
+        local time.</description>
+          <Special_Constants>
+            <missing_constant>-9.99E+00</missing_constant>
+          </Special_Constants>
+        </Field_Character>
+        <Field_Character>
+          <name>DENSITY_2230_LT</name>
+          <field_number>22</field_number>
+          <field_location unit="byte">207</field_location>
+          <data_type>ASCII_Real</data_type>
+          <field_length unit="byte">9</field_length>
+          <field_format>%9.2e</field_format>
+          <unit>M**-3</unit>
+          <description>The lunar dust density at 22:30 local   
+        time.</description>
+          <Special_Constants>
+            <missing_constant>-9.99E+00</missing_constant>
+          </Special_Constants>
+        </Field_Character>
+        <Field_Character>
+          <name>ERROR_2230_LT</name>
+          <field_number>23</field_number>
+          <field_location unit="byte">217</field_location>
+          <data_type>ASCII_Real</data_type>
+          <field_length unit="byte">9</field_length>
+          <field_format>%9.2e</field_format>
+          <unit>M**-3</unit>
+          <description>The lunar dust density error at 22:30   
+        local time.</description>
+          <Special_Constants>
+            <missing_constant>-9.99E+00</missing_constant>
+          </Special_Constants>
+        </Field_Character>
+      </Record_Character>
+    </Table_Character>
+  </File_Area_Observational>
+</Product_Observational>
+
