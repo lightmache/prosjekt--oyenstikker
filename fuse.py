@@ -234,3 +234,40 @@ def ask(question: Question):
         "session_id": question.session_id,
         "mode": "conversation" if conv_mode else "knowledge"
     }
+
+class WebQuery(BaseModel):
+    q: str
+    max_results: int = 5
+
+@app.post("/websearch")
+def websearch(query: WebQuery):
+    import requests as req
+    from bs4 import BeautifulSoup
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+        "Accept-Encoding": "gzip, deflate",
+    }
+    url = f"https://html.duckduckgo.com/html/?q={query.q}"
+    res = req.get(url, headers=headers, timeout=10)
+    soup = BeautifulSoup(res.text, "html.parser")
+    results = []
+    for r in soup.select(".web-result")[:query.max_results]:
+        title_el = r.select_one(".result__a")
+        snippet_el = r.select_one(".result__snippet")
+        if title_el:
+            from urllib.parse import urlparse, parse_qs, unquote
+            href = title_el.get("href", "")
+            if "/l/" in href and "uddg=" in href:
+                try:
+                    qs = parse_qs(urlparse(href).query)
+                    href = unquote(qs.get("uddg", [href])[0])
+                except Exception:
+                    pass
+            results.append({
+                "title": title_el.get_text(strip=True),
+                "url": href,
+                "snippet": snippet_el.get_text(strip=True) if snippet_el else ""
+            })
+    return {"results": results}
