@@ -2,19 +2,21 @@ import os
 import json
 import uuid
 import requests
+import psycopg2
+
 from datetime import datetime
 from typing import List, Optional
+
 from dotenv import load_dotenv
-
-load_dotenv()
-
-os.environ["CUDA_VISIBLE_DEVICES"] = ""
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sentence_transformers import SentenceTransformer
-import psycopg2
+
+load_dotenv()
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
+
+app = FastAPI()
 
 app = FastAPI()
 
