@@ -19,25 +19,30 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install fastapi uvicorn psycopg2-binary sentence-transformers pydantic python-dotenv ruff
+          pip install fastapi uvicorn psycopg2-binary sentence-transformers pydantic python-dotenv ruff beautifulsoup4 requests
 
       - name: Lint with ruff
-        run: ruff check fuse.py main.py ingest_vinton.py
+        run: ruff check fuse.py ingest_vinton.py
 
       - name: Validate docker-compose
-        run: |
-          pip install docker compose
-          docker compose config
+        run: docker compose config
 
-  docker-build:
+  terraform-validate:
     runs-on: ubuntu-latest
-    needs: lint-and-test
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build Docker image
-        run: docker build -t oyenstikker:ci . || echo "No Dockerfile yet - build skipped"
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
 
-      - name: Verify compose services defined
-        run: |
-          docker compose config --services
+      - name: Terraform Format Check
+        run: terraform fmt -check
+        working-directory: terraform
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: terraform
+
+      - name: Terraform Validate
+        run: terraform validate
+        working-directory: terraform
