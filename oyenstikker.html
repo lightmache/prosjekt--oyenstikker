@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Øyenstikker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;1,300&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0c0f;
+    --surface: #111318;
+    --surface2: #1a1e24;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --accent: #4ade9e;
+    --accent2: #3bc4e0;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --user-bg: #1a2a1e;
+    --user-border: rgba(74,222,158,0.2);
+    --ingest-bg: #1a1f2a;
+    --ingest-border: rgba(59,196,224,0.2);
+    --sidebar-w: 220px;
+    --graph-h: 220px;
+    --web-color: #a78bfa;
+    --web-bg: #1a1826;
+    --web-border: rgba(167,139,250,0.2);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  header {
+    padding: 0.8rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: -0.02em;
+    color: var(--accent);
+  }
+  .logo span { color: var(--muted); font-weight: 400; }
+
+  .session-indicator {
+    font-size: 0.65rem;
+    color: var(--accent2);
+    background: rgba(59,196,224,0.08);
+    border: 1px solid rgba(59,196,224,0.2);
+    border-radius: 4px;
+    padding: 0.15rem 0.5rem;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .status {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  .main { flex:1; display:flex; overflow:hidden; }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: var(--sidebar-w);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .sidebar-header {
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .sidebar-title {
+    font-size: 0.62rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .btn-new-session {
+    background: rgba(74,222,158,0.1);
+    border: 1px solid rgba(74,222,158,0.2);
+    color: var(--accent);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-new-session:hover { background: rgba(74,222,158,0.22); }
+
+  .session-list {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--surface2) transparent;
+  }
+
+  .session-item {
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+    position: relative;
+  }
+  .session-item:hover { background: var(--surface2); }
+  .session-item.active {
+    background: var(--surface2);
+    border-left: 2px solid var(--accent);
+    padding-left: calc(0.75rem - 2px);
+  }
+
+  .session-name {
+    font-size: 0.7rem;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .session-meta {
+    font-size: 0.58rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .session-del {
+    position: absolute;
+    right: 6px; top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 0.65rem;
+    cursor: pointer;
+    opacity: 0;
+    padding: 2px 4px;
+    font-family: 'DM Mono', monospace;
+  }
+  .session-item:hover .session-del { opacity: 1; }
+  .session-del:hover { color: var(--danger); }
+
+  /* CHAT AREA */
+  .chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 0;
+  }
+
+  .toolbar {
+    padding: 0.4rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+
+  .toolbar-label {
+    font-size: 0.62rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .model-select {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    padding: 0.28rem 0.5rem;
+    border-radius: 6px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .toolbar-sep {
+    width: 1px; height: 16px;
+    background: var(--border2);
+    margin: 0 2px;
+  }
+
+  .toggle-group {
+    display: flex;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .toggle-btn {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    padding: 0.28rem 0.6rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .toggle-btn:hover { color: var(--text); background: var(--surface2); }
+  .toggle-btn.active { background: var(--surface2); color: var(--accent); }
+  .toggle-btn.active.ingest-active { color: var(--accent2); }
+  .toggle-btn.active.long-active { color: var(--warn); }
+  .toggle-btn.active.graph-active { color: var(--warn); }
+
+  /* MESSAGES */
+  #messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--surface2) transparent;
+  }
+
+  .message {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 820px;
+    animation: fadeIn 0.2s ease;
+  }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+
+  .message.user { align-self: flex-end; }
+  .message.assistant { align-self: flex-start; }
+  .message.ingest-msg { align-self: flex-end; }
+
+  .msg-label {
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .message.user .msg-label { justify-content: flex-end; color: rgba(74,222,158,0.5); }
+  .message.ingest-msg .msg-label { justify-content: flex-end; color: rgba(59,196,224,0.5); }
+
+  .msg-bubble {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    line-height: 1.75;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .message.user .msg-bubble { background: var(--user-bg); border: 1px solid var(--user-border); color: #c8f5dd; }
+  .message.ingest-msg .msg-bubble { background: var(--ingest-bg); border: 1px solid var(--ingest-border); color: #c0e8f5; }
+  .message.assistant .msg-bubble { background: var(--surface); border: 1px solid var(--border); color: var(--text); }
+
+  .context-used {
+    margin-top: 6px;
+    padding: 0.5rem 0.75rem;
+    background: var(--surface2);
+    border-left: 2px solid rgba(59,196,224,0.4);
+    border-radius: 0 4px 4px 0;
+    font-size: 0.68rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .context-label {
+    color: var(--accent2);
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+  .context-item {
+    padding: 1px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .context-item:last-child { border-bottom: none; }
+
+  .thinking {
+    display: flex; gap: 4px;
+    padding: 0.75rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    width: fit-content;
+  }
+  .dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: bounce 1.2s infinite;
+  }
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%,80%,100%{transform:translateY(0);opacity:0.4} 40%{transform:translateY(-5px);opacity:1} }
+
+  .conv-badge {
+    font-size: 0.6rem;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    background: rgba(245,158,11,0.12);
+    color: var(--warn);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* INPUT */
+  .input-area {
+    padding: 0.8rem 1.5rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    flex-shrink: 0;
+  }
+
+  #input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 0.7rem 1rem;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.82rem;
+    resize: none;
+    min-height: 44px;
+    max-height: 140px;
+    outline: none;
+    transition: border-color 0.15s;
+    line-height: 1.6;
+  }
+  #input:focus { border-color: rgba(74,222,158,0.4); }
+  #input.ingest-mode { border-color: rgba(59,196,224,0.3); }
+  #input.ingest-mode:focus { border-color: rgba(59,196,224,0.6); }
+  #input::placeholder { color: var(--muted); }
+
+  .btn-send {
+    background: var(--accent);
+    color: #0a0c0f;
+    border: none;
+    border-radius: 8px;
+    padding: 0.7rem 1.2rem;
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    height: 44px;
+    white-space: nowrap;
+  }
+  .btn-send.ingest-mode { background: var(--accent2); }
+  .btn-send:hover { opacity: 0.85; }
+  .btn-send:active { transform: scale(0.97); }
+  .btn-send:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-stop {
+    background: transparent;
+    border: 1px solid rgba(239,68,68,0.4);
+    color: var(--danger);
+    border-radius: 8px;
+    padding: 0.7rem 1rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    height: 44px;
+    white-space: nowrap;
+    display: none;
+  }
+  .btn-stop:hover { background: rgba(239,68,68,0.1); border-color: var(--danger); }
+  .btn-stop.visible { display: block; }
+
+  .empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 0.75rem;
+  }
+  .empty-glyph {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: rgba(74,222,158,0.12);
+    letter-spacing: -0.05em;
+  }
+
+  .mode-badge {
+    font-size: 0.6rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+  }
+  .mode-badge.ask { background: rgba(74,222,158,0.12); color: var(--accent); }
+  .mode-badge.ingest { background: rgba(59,196,224,0.12); color: var(--accent2); }
+  .mode-badge.short { background: rgba(107,114,128,0.15); color: var(--muted); }
+  .mode-badge.long { background: rgba(245,158,11,0.12); color: var(--warn); }
+
+  /* GRAPH PANEL */
+  .graph-panel {
+    border-top: 1px solid var(--border);
+    height: var(--graph-h);
+    flex-shrink: 0;
+    display: none;
+    flex-direction: column;
+    background: var(--surface);
+  }
+  .graph-panel.open { display: flex; }
+
+  .graph-header {
+    padding: 0.4rem 1rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .graph-title {
+    font-size: 0.62rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .graph-count {
+    font-size: 0.6rem;
+    color: var(--accent);
+  }
+  .graph-refresh {
+    margin-left: auto;
+    background: none;
+    border: 1px solid var(--border2);
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .graph-refresh:hover { color: var(--text); }
+
+  #graph-canvas {
+    flex: 1;
+    width: 100%;
+    cursor: crosshair;
+  }
+
+  .graph-tooltip {
+    position: fixed;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.65rem;
+    color: var(--text);
+    max-width: 260px;
+    pointer-events: none;
+    display: none;
+    z-index: 100;
+    line-height: 1.5;
+  }
+
+  /* WEB SEARCH */
+  .web-results {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    max-width: 820px;
+    align-self: flex-start;
+  }
+
+  .web-result-card {
+    background: var(--web-bg);
+    border: 1px solid var(--web-border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    animation: fadeIn 0.2s ease;
+  }
+
+  .web-result-title {
+    font-size: 0.8rem;
+    color: var(--web-color);
+    margin-bottom: 4px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+  }
+
+  .web-result-url {
+    font-size: 0.62rem;
+    color: var(--muted);
+    margin-bottom: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .web-result-body {
+    font-size: 0.78rem;
+    color: var(--text);
+    line-height: 1.6;
+    margin-bottom: 8px;
+  }
+
+  .web-result-actions {
+    display: flex;
+    gap: 6px;
+  }
+
+  .btn-web-ingest {
+    background: rgba(59,196,224,0.1);
+    border: 1px solid rgba(59,196,224,0.2);
+    color: var(--accent2);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-web-ingest:hover { background: rgba(59,196,224,0.2); }
+  .btn-web-ingest.ingested { color: var(--accent); border-color: rgba(74,222,158,0.3); background: rgba(74,222,158,0.08); cursor: default; }
+
+  .btn-web-ask {
+    background: rgba(167,139,250,0.1);
+    border: 1px solid rgba(167,139,250,0.2);
+    color: var(--web-color);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-web-ask:hover { background: rgba(167,139,250,0.2); }
+
+  .btn-web-open {
+    background: none;
+    border: 1px solid var(--border2);
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-decoration: none;
+  }
+  .btn-web-open:hover { color: var(--text); border-color: var(--border2); }
+
+  .toggle-btn.active.web-active { color: var(--web-color); }
+
+  /* endpoint input */
+  .endpoint-input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    outline: none;
+    width: 170px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Ø<span>yenstikker</span></div>
+  <span class="session-indicator" id="session-indicator">no session</span>
+  <div class="status">
+    <div class="status-dot"></div>
+    <span id="status-text">connecting...</span>
+  </div>
+</header>
+
+<div class="main">
+
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-title">sessions</span>
+      <button class="btn-new-session" onclick="newSession()">+ new</button>
+    </div>
+    <div class="session-list" id="session-list">
+      <div style="padding:0.75rem;font-size:0.65rem;color:var(--muted);">loading...</div>
+    </div>
+  </div>
+
+  <div class="chat-area">
+
+    <div class="toolbar">
+      <span class="toolbar-label">model</span>
+      <select class="model-select" id="model-select">
+        <option value="phi3:mini">phi3:mini</option>
+        <option value="mistral">mistral</option>
+        <option value="llama3.1:8b">llama3.1:8b</option>
+        <option value="phi4-mini">phi4-mini</option>
+      </select>
+
+      <div class="toolbar-sep"></div>
+      <span class="toolbar-label">mode</span>
+      <div class="toggle-group">
+        <button class="toggle-btn active" id="btn-ask" onclick="setMode('ask')">ask</button>
+        <button class="toggle-btn" id="btn-ingest" onclick="setMode('ingest')">ingest</button>
+        <button class="toggle-btn" id="btn-web" onclick="setMode('web')">web</button>
+      </div>
+
+      <div class="toolbar-sep"></div>
+      <span class="toolbar-label">length</span>
+      <div class="toggle-group">
+        <button class="toggle-btn active" id="btn-short" onclick="setLength('short')">short</button>
+        <button class="toggle-btn" id="btn-long" onclick="setLength('long')">long</button>
+      </div>
+
+      <div class="toolbar-sep"></div>
+      <span class="toolbar-label">graph</span>
+      <div class="toggle-group">
+        <button class="toggle-btn" id="btn-graph" onclick="toggleGraph()">show</button>
+      </div>
+
+      <div class="toolbar-sep"></div>
+      <span class="toolbar-label">api</span>
+      <input class="endpoint-input" id="endpoint" value="http://localhost:8000">
+    </div>
+
+    <div id="messages">
+      <div class="empty-state" id="empty">
+        <div class="empty-glyph">Ø</div>
+        <div>create or select a session to begin</div>
+      </div>
+    </div>
+
+    <!-- MEMORY GRAPH -->
+    <div class="graph-panel" id="graph-panel">
+      <div class="graph-header">
+        <span class="graph-title">memory graph</span>
+        <span class="graph-count" id="graph-count"></span>
+        <button class="graph-refresh" onclick="loadGraph()">↻ refresh</button>
+      </div>
+      <canvas id="graph-canvas"></canvas>
+    </div>
+
+    <div class="input-area">
+      <textarea id="input" placeholder="create or select a session to begin..." rows="1" disabled></textarea>
+      <button class="btn-stop" id="stop-btn" onclick="stopRequest()">stop</button>
+      <button class="btn-send" id="send-btn" onclick="sendMessage()" disabled>send</button>
+    </div>
+
+  </div>
+</div>
+
+<div class="graph-tooltip" id="graph-tooltip"></div>
+
+<script>
+const API = () => document.getElementById('endpoint').value.trim();
+const MODEL = () => document.getElementById('model-select').value;
+
+let currentMode = 'ask';
+let currentLength = 'short';
+let currentController = null;
+let currentSessionId = null;
+let conversationHistory = [];
+let graphOpen = false;
+let graphNodes = [];
+let graphProjected = [];
+let animFrame = null;
+
+// ── UTILS ─────────────────────────────────────────────────────
+
+function ts() { return new Date().toISOString(); }
+
+function autosessionName() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  return `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+}
+
+// ── HEALTH ────────────────────────────────────────────────────
+
+async function checkHealth() {
+  try {
+    const r = await fetch(API() + '/health', { signal: AbortSignal.timeout(3000) });
+    const d = await r.json();
+    document.getElementById('status-text').textContent = d.status === 'ok' ? 'api online' : 'api error';
+  } catch {
+    document.getElementById('status-text').textContent = 'api offline';
+  }
+}
+
+// ── SESSION MANAGEMENT ────────────────────────────────────────
+
+async function loadSessions() {
+  try {
+    const res = await fetch(API() + '/session/list');
+    if (!res.ok) return;
+    const sessions = await res.json();
+    renderSessionList(sessions);
+  } catch {}
+}
+
+function renderSessionList(sessions) {
+  const list = document.getElementById('session-list');
+  list.innerHTML = '';
+  if (!sessions.length) {
+    list.innerHTML = '<div style="padding:0.75rem;font-size:0.65rem;color:var(--muted);">no sessions yet</div>';
+    return;
+  }
+  sessions.forEach(s => {
+    const item = document.createElement('div');
+    item.className = 'session-item' + (s.id === currentSessionId ? ' active' : '');
+    item.dataset.id = s.id;
+    item.innerHTML = `
+      <div class="session-name">${escHtml(s.name)}</div>
+      <div class="session-meta">${s.message_count} msgs &middot; ${new Date(s.updated).toLocaleDateString()}</div>
+      <button class="session-del" title="delete" onclick="event.stopPropagation(); deleteSession('${s.id}')">✕</button>
+    `;
+    item.onclick = () => loadSession(s.id);
+    list.appendChild(item);
+  });
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function newSession() {
+  const name = autosessionName();
+  try {
+    const res = await fetch(API() + '/session/new', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name })
+    });
+    if (!res.ok) throw new Error('api error');
+    const data = await res.json();
+    currentSessionId = data.session_id;
+    conversationHistory = [];
+    document.getElementById('session-indicator').textContent = data.name;
+    clearMessages('session ready');
+    enableInput();
+    loadSessions();
+    if (graphOpen) loadGraph();
+  } catch {
+    showError('Could not create session — is the API running at ' + API() + '?');
+  }
+}
+
+async function loadSession(sessionId) {
+  if (sessionId === currentSessionId) return;
+  try {
+    const res = await fetch(API() + '/session/' + sessionId);
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.error) return;
+
+    currentSessionId = sessionId;
+    // Rebuild local history from session file — this is the source of truth
+    conversationHistory = (data.history || []).map(m => ({
+      role: m.role,
+      content: m.content
+    }));
+
+    document.getElementById('session-indicator').textContent = data.name;
+    clearMessages();
+
+    // Replay messages in UI
+    (data.history || []).forEach(m => {
+      addMessage(
+        m.role === 'user' ? 'user' : 'assistant',
+        m.content,
+        null,
+        null
+      );
+    });
+
+    enableInput();
+    loadSessions();
+    if (graphOpen) loadGraph();
+
+  } catch {}
+}
+
+async function deleteSession(sessionId) {
+  if (!confirm('Delete this session?')) return;
+  // fuse.py doesn't have a delete endpoint yet — just deselect
+  if (sessionId === currentSessionId) {
+    currentSessionId = null;
+    conversationHistory = [];
+    clearMessages('session deleted');
+    disableInput();
+    document.getElementById('session-indicator').textContent = 'no session';
+  }
+  // Remove from UI immediately
+  const el = document.querySelector(`.session-item[data-id="${sessionId}"]`);
+  if (el) el.remove();
+}
+
+// ── INPUT ENABLE/DISABLE ──────────────────────────────────────
+
+function enableInput() {
+  document.getElementById('input').disabled = false;
+  document.getElementById('input').placeholder = currentMode === 'ingest'
+    ? 'paste text to store in memory...'
+    : 'ask a question...';
+  document.getElementById('send-btn').disabled = false;
+  document.getElementById('input').focus();
+}
+
+function disableInput() {
+  document.getElementById('input').disabled = true;
+  document.getElementById('input').placeholder = 'create or select a session to begin...';
+  document.getElementById('send-btn').disabled = true;
+}
+
+// ── UI CONTROLS ───────────────────────────────────────────────
+
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('btn-ask').classList.toggle('active', mode === 'ask');
+  document.getElementById('btn-ask').classList.remove('ingest-active', 'web-active');
+  document.getElementById('btn-ingest').classList.toggle('active', mode === 'ingest');
+  document.getElementById('btn-ingest').classList.toggle('ingest-active', mode === 'ingest');
+  document.getElementById('btn-web').classList.toggle('active', mode === 'web');
+  document.getElementById('btn-web').classList.toggle('web-active', mode === 'web');
+
+  const inputEl = document.getElementById('input');
+  const sendBtn = document.getElementById('send-btn');
+  inputEl.classList.toggle('ingest-mode', mode === 'ingest');
+  sendBtn.classList.toggle('ingest-mode', mode === 'ingest');
+
+  if (mode === 'ingest') {
+    sendBtn.textContent = 'ingest';
+    if (!inputEl.disabled) inputEl.placeholder = 'paste text to store in memory...';
+  } else if (mode === 'web') {
+    sendBtn.textContent = 'search';
+    sendBtn.style.background = 'var(--web-color)';
+    if (!inputEl.disabled) inputEl.placeholder = 'search the web...';
+  } else {
+    sendBtn.textContent = 'send';
+    sendBtn.style.background = '';
+    if (!inputEl.disabled) inputEl.placeholder = 'ask a question...';
+  }
+
+  if (!inputEl.disabled) inputEl.focus();
+}
+
+function setLength(len) {
+  currentLength = len;
+  document.getElementById('btn-short').classList.toggle('active', len === 'short');
+  document.getElementById('btn-short').classList.remove('long-active');
+  document.getElementById('btn-long').classList.toggle('active', len === 'long');
+  document.getElementById('btn-long').classList.toggle('long-active', len === 'long');
+}
+
+function toggleGraph() {
+  graphOpen = !graphOpen;
+  document.getElementById('graph-panel').classList.toggle('open', graphOpen);
+  const btn = document.getElementById('btn-graph');
+  btn.classList.toggle('active', graphOpen);
+  btn.classList.toggle('graph-active', graphOpen);
+  btn.textContent = graphOpen ? 'hide' : 'show';
+  if (graphOpen) {
+    setTimeout(() => { resizeCanvas(); loadGraph(); }, 50);
+  }
+}
+
+function stopRequest() {
+  if (currentController) {
+    currentController.abort();
+    currentController = null;
+    document.getElementById('thinking')?.remove();
+    document.getElementById('stop-btn').classList.remove('visible');
+    document.getElementById('send-btn').disabled = false;
+    addMessage('assistant', '[ stopped ]', null, null);
+  }
+}
+
+function clearMessages(subtitle) {
+  const msgs = document.getElementById('messages');
+  msgs.innerHTML = `<div class="empty-state" id="empty">
+    <div class="empty-glyph">Ø</div>
+    <div>${subtitle || 'session ready'}</div>
+  </div>`;
+}
+
+function showError(msg) {
+  addMessage('assistant', '⚠ ' + msg, null, null);
+}
+
+// ── MESSAGE RENDERING ─────────────────────────────────────────
+
+function addMessage(role, text, context, badges) {
+  const empty = document.getElementById('empty');
+  if (empty) empty.remove();
+
+  const msgs = document.getElementById('messages');
+  const wrap = document.createElement('div');
+  wrap.className = 'message ' + role;
+
+  const label = document.createElement('div');
+  label.className = 'msg-label';
+
+  const roleText = document.createElement('span');
+  roleText.textContent = role === 'user' ? 'you' : role === 'ingest-msg' ? 'ingested' : 'øyenstikker';
+  label.appendChild(roleText);
+
+  if (badges) {
+    badges.forEach(b => {
+      const badge = document.createElement('span');
+      badge.className = 'mode-badge ' + b.cls;
+      badge.textContent = b.text;
+      label.appendChild(badge);
+    });
+  }
+  wrap.appendChild(label);
+
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble';
+  bubble.textContent = text;
+  wrap.appendChild(bubble);
+
+  if (context && context.length > 0) {
+    const ctx = document.createElement('div');
+    ctx.className = 'context-used';
+    const ctxLabel = document.createElement('div');
+    ctxLabel.className = 'context-label';
+    ctxLabel.textContent = 'memory context used';
+    ctx.appendChild(ctxLabel);
+    context.forEach(c => {
+      const item = document.createElement('div');
+      item.className = 'context-item';
+      item.textContent = c.length > 90 ? c.slice(0, 90) + '…' : c;
+      ctx.appendChild(item);
+    });
+    wrap.appendChild(ctx);
+  }
+
+  msgs.appendChild(wrap);
+  msgs.scrollTop = msgs.scrollHeight;
+  return wrap;
+}
+
+function addThinking() {
+  const msgs = document.getElementById('messages');
+  const wrap = document.createElement('div');
+  wrap.className = 'message assistant';
+  wrap.id = 'thinking';
+  const label = document.createElement('div');
+  label.className = 'msg-label';
+  label.textContent = 'øyenstikker';
+  wrap.appendChild(label);
+  const t = document.createElement('div');
+  t.className = 'thinking';
+  t.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+  wrap.appendChild(t);
+  msgs.appendChild(wrap);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+// ── SEND ──────────────────────────────────────────────────────
+
+async function sendMessage() {
+  if (!currentSessionId) { showError('No session selected. Create one first.'); return; }
+  const text = document.getElementById('input').value.trim();
+  if (!text) return;
+
+  const btn = document.getElementById('send-btn');
+  const stopBtn = document.getElementById('stop-btn');
+  btn.disabled = true;
+  document.getElementById('input').value = '';
+  document.getElementById('input').style.height = 'auto';
+
+  // ── WEB SEARCH ──
+  if (currentMode === 'web') {
+    addMessage('user', text, null, [{cls:'mode-badge', text:'web search'}]);
+    const thinking = addThinking();
+    btn.disabled = true;
+    try {
+      const res = await fetch(API() + '/websearch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ q: text, max_results: 5 })
+      });
+      const data = await res.json();
+      document.getElementById('thinking')?.remove();
+
+      if (!data.results || data.results.length === 0) {
+        addMessage('assistant', 'No results found. Try a different query.', null, null);
+      } else {
+        addWebResults(data.results, text);
+      }
+    } catch {
+      document.getElementById('thinking')?.remove();
+      addMessage('assistant', '⚠ web search failed — check the API is running.', null, null);
+    }
+    btn.disabled = false;
+    document.getElementById('input').focus();
+    return;
+  }
+
+  // ── INGEST ──
+  if (currentMode === 'ingest') {
+    addMessage('ingest-msg', text, null, [{cls:'ingest', text:'ingest'}]);
+    try {
+      const res = await fetch(API() + '/ingest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: text,
+          metadata: {
+            source: 'manual',
+            session_id: currentSessionId,
+            timestamp: ts()
+          }
+        })
+      });
+      const data = await res.json();
+      addMessage('assistant', data.status === 'ok' ? '✓ stored in memory.' : '✗ ingest failed.', null, null);
+      if (graphOpen) setTimeout(loadGraph, 500);
+    } catch {
+      addMessage('assistant', '⚠ error: could not reach api at ' + API(), null, null);
+    }
+    btn.disabled = false;
+    document.getElementById('input').focus();
+    return;
+  }
+
+  // ── ASK ──
+  const badges = [
+    { cls: 'ask', text: 'ask' },
+    { cls: currentLength, text: currentLength }
+  ];
+  addMessage('user', text, null, badges);
+  addThinking();
+  stopBtn.classList.add('visible');
+  currentController = new AbortController();
+
+  try {
+    const res = await fetch(API() + '/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        q: text,
+        model: MODEL(),
+        length: currentLength,
+        session_id: currentSessionId,
+        history: conversationHistory.slice(-12)   // last 12 messages = 6 turns
+      }),
+      signal: currentController.signal
+    });
+
+    if (!res.ok) throw new Error('api ' + res.status);
+    const data = await res.json();
+    document.getElementById('thinking')?.remove();
+
+    const isConv = data.mode === 'conversation';
+    const answerBadges = isConv ? [{ cls: 'conv-badge', text: 'conv mode' }] : null;
+    addMessage('assistant', data.answer, data.context_used, answerBadges);
+
+    // Update local history — this mirrors what the backend saved
+    conversationHistory.push({ role: 'user', content: text });
+    conversationHistory.push({ role: 'assistant', content: data.answer });
+
+    loadSessions();
+
+  } catch (err) {
+    document.getElementById('thinking')?.remove();
+    if (err.name !== 'AbortError') {
+      addMessage('assistant', '⚠ error: could not reach api at ' + API() + '\n\ncheck that uvicorn is running.', null, null);
+    }
+  }
+
+  currentController = null;
+  stopBtn.classList.remove('visible');
+  btn.disabled = false;
+  document.getElementById('input').focus();
+}
+
+// ── WEB RESULTS ──────────────────────────────────────────────
+
+function addWebResults(results, query) {
+  const empty = document.getElementById('empty');
+  if (empty) empty.remove();
+
+  const msgs = document.getElementById('messages');
+
+  // Label row
+  const labelWrap = document.createElement('div');
+  labelWrap.className = 'message assistant';
+  const label = document.createElement('div');
+  label.className = 'msg-label';
+  label.innerHTML = `<span>web results</span>
+    <span class="mode-badge" style="background:rgba(167,139,250,0.12);color:var(--web-color)">${results.length} results</span>`;
+  labelWrap.appendChild(label);
+  msgs.appendChild(labelWrap);
+
+  // Result cards
+  const container = document.createElement('div');
+  container.className = 'web-results';
+
+  results.forEach((r, i) => {
+    const card = document.createElement('div');
+    card.className = 'web-result-card';
+    card.id = `web-result-${i}`;
+
+    const title = document.createElement('div');
+    title.className = 'web-result-title';
+    title.textContent = r.title;
+
+    const url = document.createElement('div');
+    url.className = 'web-result-url';
+    url.textContent = r.href;
+
+    const body = document.createElement('div');
+    body.className = 'web-result-body';
+    body.textContent = r.body;
+
+    const actions = document.createElement('div');
+    actions.className = 'web-result-actions';
+
+    // Ingest button
+    const ingestBtn = document.createElement('button');
+    ingestBtn.className = 'btn-web-ingest';
+    ingestBtn.textContent = '⊕ ingest';
+    ingestBtn.onclick = async () => {
+      ingestBtn.disabled = true;
+      ingestBtn.textContent = 'ingesting...';
+      try {
+        const content = `${r.title}\n\n${r.body}\n\nSource: ${r.href}`;
+        const res = await fetch(API() + '/ingest', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            content,
+            metadata: {
+              source: 'web',
+              url: r.href,
+              title: r.title,
+              session_id: currentSessionId,
+              query,
+              timestamp: ts()
+            }
+          })
+        });
+        const d = await res.json();
+        if (d.status === 'ok') {
+          ingestBtn.textContent = '✓ ingested';
+          ingestBtn.classList.add('ingested');
+          if (graphOpen) setTimeout(loadGraph, 500);
+        } else {
+          ingestBtn.textContent = '✗ failed';
+        }
+      } catch {
+        ingestBtn.textContent = '✗ error';
+        ingestBtn.disabled = false;
+      }
+    };
+
+    // Ask about this button
+    const askBtn = document.createElement('button');
+    askBtn.className = 'btn-web-ask';
+    askBtn.textContent = '↩ ask about this';
+    askBtn.onclick = () => {
+      setMode('ask');
+      const inputEl = document.getElementById('input');
+      inputEl.value = `Based on: "${r.title}" — `;
+      inputEl.focus();
+      inputEl.style.height = 'auto';
+      inputEl.style.height = Math.min(inputEl.scrollHeight, 140) + 'px';
+    };
+
+    // Open link
+    const openLink = document.createElement('a');
+    openLink.className = 'btn-web-open';
+    openLink.href = r.href;
+    openLink.target = '_blank';
+    openLink.rel = 'noopener noreferrer';
+    openLink.textContent = '↗ open';
+
+    actions.appendChild(ingestBtn);
+    actions.appendChild(askBtn);
+    actions.appendChild(openLink);
+
+    card.appendChild(title);
+    card.appendChild(url);
+    card.appendChild(body);
+    card.appendChild(actions);
+    container.appendChild(card);
+  });
+
+  msgs.appendChild(container);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+// ── MEMORY GRAPH (PCA) ────────────────────────────────────────
+
+// Simple power-iteration PCA — reduces N×384 to N×2
+function pca2d(vectors) {
+  if (vectors.length < 2) return vectors.map(() => [0, 0]);
+  const n = vectors.length;
+  const d = vectors[0].length;
+
+  // Center
+  const mean = new Array(d).fill(0);
+  vectors.forEach(v => v.forEach((x, i) => mean[i] += x / n));
+  const centered = vectors.map(v => v.map((x, i) => x - mean[i]));
+
+  // Power iteration for 2 components
+  const components = [];
+  let data = centered.map(v => [...v]);
+
+  for (let c = 0; c < 2; c++) {
+    // Random seed vector
+    let vec = new Array(d).fill(0).map((_, i) => Math.sin(i * 1.7 + c * 3.14));
+    const initNorm = Math.sqrt(vec.reduce((s, x) => s + x * x, 0));
+    vec = vec.map(x => x / initNorm);
+
+    for (let iter = 0; iter < 60; iter++) {
+      // v = X^T (X v) / n
+      const proj = data.map(row => row.reduce((s, x, i) => s + x * vec[i], 0));
+      const newVec = new Array(d).fill(0);
+      proj.forEach((p, j) => data[j].forEach((x, i) => { newVec[i] += p * x; }));
+      const norm = Math.sqrt(newVec.reduce((s, x) => s + x * x, 0));
+      if (norm < 1e-10) break;
+      vec = newVec.map(x => x / norm);
+    }
+
+    components.push(vec);
+
+    // Deflate
+    const projs = data.map(row => row.reduce((s, x, i) => s + x * vec[i], 0));
+    data = data.map((row, j) => row.map((x, i) => x - projs[j] * vec[i]));
+  }
+
+  // Project
+  return centered.map(v => components.map(c => c.reduce((s, x, i) => s + x * v[i], 0)));
+}
+
+async function loadGraph() {
+  if (!graphOpen) return;
+  const countEl = document.getElementById('graph-count');
+  countEl.textContent = 'loading...';
+  try {
+    const res = await fetch(API() + '/graph');
+    if (!res.ok) { countEl.textContent = 'endpoint not available'; return; }
+    const data = await res.json();
+    graphNodes = data.nodes || [];
+    if (graphNodes.length < 2) {
+      countEl.textContent = graphNodes.length === 0 ? 'no documents ingested yet' : '1 document — need 2+ to graph';
+      clearCanvas();
+      return;
+    }
+    countEl.textContent = `${graphNodes.length} documents`;
+    const vecs = graphNodes.map(n => n.embedding);
+    graphProjected = pca2d(vecs);
+    drawGraph();
+  } catch (e) {
+    countEl.textContent = 'graph error — check /graph endpoint';
+  }
+}
+
+function resizeCanvas() {
+  const canvas = document.getElementById('graph-canvas');
+  const panel = document.getElementById('graph-panel');
+  const rect = panel.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height - 32; // subtract header
+}
+
+function clearCanvas() {
+  const canvas = document.getElementById('graph-canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function drawGraph() {
+  const canvas = document.getElementById('graph-canvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width;
+  const H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  if (graphProjected.length < 2) return;
+
+  // Normalize to canvas
+  const xs = graphProjected.map(p => p[0]);
+  const ys = graphProjected.map(p => p[1]);
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+  const pad = 28;
+  const scaleX = (maxX - minX) < 1e-10 ? 1 : (W - pad*2) / (maxX - minX);
+  const scaleY = (maxY - minY) < 1e-10 ? 1 : (H - pad*2) / (maxY - minY);
+
+  const toScreen = (p, i) => [
+    pad + (p[0] - minX) * scaleX,
+    pad + (p[1] - minY) * scaleY
+  ];
+
+  // Draw edges between nearby points (k-nearest, k=2)
+  graphProjected.forEach((p, i) => {
+    const [px, py] = toScreen(p);
+    // find 2 nearest
+    const dists = graphProjected.map((q, j) => {
+      if (j === i) return Infinity;
+      const [qx, qy] = toScreen(q);
+      return Math.sqrt((px-qx)**2 + (py-qy)**2);
+    });
+    const sorted = dists.map((d,j) => [d,j]).sort((a,b) => a[0]-b[0]).slice(0,2);
+    sorted.forEach(([dist, j]) => {
+      if (dist < W * 0.3) {
+        const [qx, qy] = toScreen(graphProjected[j]);
+        ctx.beginPath();
+        ctx.moveTo(px, py);
+        ctx.lineTo(qx, qy);
+        ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    });
+  });
+
+  // Draw nodes
+  graphProjected.forEach((p, i) => {
+    const [px, py] = toScreen(p);
+    const node = graphNodes[i];
+    const isCurrentSession = node.metadata && node.metadata.session_id === currentSessionId;
+
+    // Glow for current session
+    if (isCurrentSession) {
+      ctx.beginPath();
+      ctx.arc(px, py, 8, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(74,222,158,0.12)';
+      ctx.fill();
+    }
+
+    ctx.beginPath();
+    ctx.arc(px, py, isCurrentSession ? 5 : 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = isCurrentSession ? '#4ade9e' : 'rgba(107,114,128,0.6)';
+    ctx.fill();
+
+    if (isCurrentSession) {
+      ctx.beginPath();
+      ctx.arc(px, py, 5, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(74,222,158,0.4)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+  });
+}
+
+// Graph hover tooltip
+document.getElementById('graph-canvas').addEventListener('mousemove', e => {
+  if (!graphOpen || graphProjected.length < 2) return;
+  const canvas = document.getElementById('graph-canvas');
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const W = canvas.width;
+  const H = canvas.height;
+  const pad = 28;
+
+  const xs = graphProjected.map(p => p[0]);
+  const ys = graphProjected.map(p => p[1]);
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+  const scaleX = (maxX - minX) < 1e-10 ? 1 : (W - pad*2) / (maxX - minX);
+  const scaleY = (maxY - minY) < 1e-10 ? 1 : (H - pad*2) / (maxY - minY);
+
+  let closest = -1, closestDist = 20;
+  graphProjected.forEach((p, i) => {
+    const px = pad + (p[0] - minX) * scaleX;
+    const py = pad + (p[1] - minY) * scaleY;
+    const d = Math.sqrt((px - mx)**2 + (py - my)**2);
+    if (d < closestDist) { closestDist = d; closest = i; }
+  });
+
+  const tooltip = document.getElementById('graph-tooltip');
+  if (closest >= 0) {
+    const node = graphNodes[closest];
+    const isSession = node.metadata && node.metadata.session_id === currentSessionId;
+    tooltip.style.display = 'block';
+    tooltip.style.left = (e.clientX + 12) + 'px';
+    tooltip.style.top = (e.clientY - 8) + 'px';
+    tooltip.innerHTML = `
+      <div style="color:${isSession ? 'var(--accent)' : 'var(--muted)'};font-size:0.58rem;margin-bottom:3px;">
+        ${isSession ? '● current session' : '○ other session'}
+      </div>
+      <div>${escHtml(node.content.slice(0, 120))}${node.content.length > 120 ? '…' : ''}</div>
+    `;
+  } else {
+    tooltip.style.display = 'none';
+  }
+});
+
+document.getElementById('graph-canvas').addEventListener('mouseleave', () => {
+  document.getElementById('graph-tooltip').style.display = 'none';
+});
+
+window.addEventListener('resize', () => {
+  if (graphOpen) { resizeCanvas(); drawGraph(); }
+});
+
+// ── KEYBOARD & AUTO-RESIZE ────────────────────────────────────
+
+const input = document.getElementById('input');
+input.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+input.addEventListener('input', () => {
+  input.style.height = 'auto';
+  input.style.height = Math.min(input.scrollHeight, 140) + 'px';
+});
+
+// ── INIT ──────────────────────────────────────────────────────
+
+checkHealth();
+setInterval(checkHealth, 10000);
+loadSessions();
+setInterval(loadSessions, 30000);
+</script>
+</body>
+</html>
