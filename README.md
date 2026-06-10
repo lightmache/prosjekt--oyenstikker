@@ -1,55 +1,84 @@
 # prosjekt–øyenstikker
 
-A containerized multi-service data ingestion and retrieval system designed for structured observational datasets, combining API ingestion, object storage, and semantic search.
+A containerized multi-service data ingestion, storage, observability, and retrieval system for structured observational datasets, integrating API ingestion, object storage, semantic search, infrastructure-as-code deployment, and full-stack observability tooling.
 
 ---
 
 ## Overview
 
-This system implements a full pipeline for ingesting, storing, and querying structured and semi-structured data:
+This system implements an end-to-end infrastructure pipeline for ingesting, storing, observing, and querying structured and semi-structured datasets.
 
-- Ingestion API (FastAPI)
-- Metadata + vector storage (PostgreSQL + pgvector)
-- Object storage (MinIO, S3-compatible)
-- Semantic + keyword search interface
-- Session-aware query and retrieval endpoints
+It is designed as a reproducible systems engineering stack combining:
 
-It is designed as a reproducible research data backend for multi-domain observational datasets.
+- API-based ingestion and retrieval
+- Vector search over embedded metadata
+- S3-compatible object storage
+- Infrastructure-as-code deployment
+- Centralized logging and observability stack
+- Lightweight frontend interface for testing and interaction
 
 ---
 
-## Core Capabilities
+## System Components
 
-- REST API for structured data ingestion
-- Persistent object storage via MinIO (S3-compatible)
-- Vector embeddings stored in PostgreSQL using pgvector
-- Hybrid search (semantic + metadata filtering)
-- Session-based query tracking
-- Docker Compose deployment for full stack reproducibility
+### Backend API (FastAPI)
+- `POST /ingest` – ingest structured documents
+- `GET /search` – semantic + metadata search
+- `POST /ask` – retrieval-augmented query interface
+- `POST /session/new` – session tracking
+
+---
+
+### Storage Layer
+- PostgreSQL + pgvector for hybrid structured + vector search
+- MinIO (S3-compatible object storage) for persistent data storage
+
+---
+
+### Infrastructure (Terraform)
+- Infrastructure-as-code definitions for full stack provisioning:
+  - PostgreSQL + pgvector
+  - MinIO object storage
+  - Networked service configuration
+- Reproducible environment setup using declarative infrastructure definitions
+
+---
+
+### Observability Stack
+- **Grafana** – visualization and system dashboards
+- **Loki** – centralized log aggregation system
+- **Promtail** – log shipping from services into Loki
+
+Provides:
+- Centralized logging across services
+- Queryable log streams
+- Operational visibility into ingestion and retrieval pipelines
+- Debugging support for distributed services
+
+---
+
+### Frontend
+- Lightweight HTML interface (`oyenstikker.html`)
+- Used for testing ingestion, search, and retrieval endpoints
+- Development and validation interface for system behavior
 
 ---
 
 ## Architecture
 
-- FastAPI service (`main.py`)
+- FastAPI application (`main.py`)
 - PostgreSQL + pgvector backend
 - MinIO object storage
-- Optional ingestion and monitoring utilities
-- Docker Compose orchestration for all services
-
----
-
-## Key Endpoints
-
-- `POST /ingest` – ingest structured documents
-- `GET /search` – semantic + metadata search
-- `POST /ask` – retrieval-augmented query interface
-- `POST /session/new` – session tracking for queries
+- Grafana + Loki + Promtail observability stack
+- Terraform infrastructure definitions
+- Docker Compose multi-service orchestration
+- Static HTML frontend
 
 ---
 
 ## Running Locally
 
+### 1. Infrastructure (optional Terraform layer)
 ```bash
-docker compose up -d
-uvicorn main:app --reload --port 8000
+terraform init
+terraform apply
