@@ -22,6 +22,14 @@ services:
       GF_USERS_ALLOW_SIGN_UP: "false"
     restart: unless-stopped
 
+  promtail:
+    image: grafana/promtail:2.9.0
+    volumes:
+      - ./promtail-config.yml:/etc/promtail/config.yml
+      - ../logs:/logs
+    command: -config.file=/etc/promtail/config.yml
+    restart: unless-stopped
+
 volumes:
   lokidata:
   grafanadata:
