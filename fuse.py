@@ -1,4 +1,19 @@
 import logging
+import os
+import json
+import uuid
+import requests
+import psycopg2
+from bs4 import BeautifulSoup
+from urllib.parse import urlparse, parse_qs, unquote
+from datetime import datetime
+from typing import List, Optional
+from dotenv import load_dotenv
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from sentence_transformers import SentenceTransformer
+
 logging.basicConfig(
     filename="logs/oyenstikker.log",
     level=logging.INFO,
@@ -6,25 +21,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger("oyenstikker")
 
-import os
-import json
-import uuid
-import requests
-import psycopg2
-
-from datetime import datetime
-from typing import List, Optional
-
-from dotenv import load_dotenv
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from sentence_transformers import SentenceTransformer
-
 load_dotenv()
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
-
-app = FastAPI()
 
 app = FastAPI()
 
@@ -101,9 +99,9 @@ def save_session(session_id: str, data: dict):
         json.dump(data, f, indent=2)
 
 @app.post("/session/new")
-def new_session(req: SessionCreate):
+def new_session(body: SessionCreate):
     session_id = str(uuid.uuid4())[:8]
-    name = req.name or f"session-{datetime.now().strftime('%Y%m%d-%H%M')}"
+    name = body.name or f"session-{datetime.now().strftime('%Y%m%d-%H%M')}"
     data = {
         "id": session_id,
         "name": name,
@@ -249,8 +247,6 @@ class WebQuery(BaseModel):
 
 @app.post("/websearch")
 def websearch(query: WebQuery):
-    import requests as req
-    from bs4 import BeautifulSoup
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
@@ -258,14 +254,13 @@ def websearch(query: WebQuery):
         "Accept-Encoding": "gzip, deflate",
     }
     url = f"https://html.duckduckgo.com/html/?q={query.q}"
-    res = req.get(url, headers=headers, timeout=10)
+    res = requests.get(url, headers=headers, timeout=10)
     soup = BeautifulSoup(res.text, "html.parser")
     results = []
     for r in soup.select(".web-result")[:query.max_results]:
         title_el = r.select_one(".result__a")
         snippet_el = r.select_one(".result__snippet")
         if title_el:
-            from urllib.parse import urlparse, parse_qs, unquote
             href = title_el.get("href", "")
             if "/l/" in href and "uddg=" in href:
                 try:
@@ -279,4 +274,3 @@ def websearch(query: WebQuery):
                 "snippet": snippet_el.get_text(strip=True) if snippet_el else ""
             })
     return {"results": results}
-
