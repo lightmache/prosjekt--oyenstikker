@@ -1,3 +1,11 @@
+import logging
+logging.basicConfig(
+    filename="logs/oyenstikker.log",
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(message)s"
+)
+logger = logging.getLogger("oyenstikker")
+
 import os
 import json
 import uuid
@@ -272,10 +280,3 @@ def websearch(query: WebQuery):
             })
     return {"results": results}
 
-import logging
-logging.basicConfig(
-    filename="logs/oyenstikker.log",
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(message)s"
-)
-logger = logging.getLogger("oyenstikker")
