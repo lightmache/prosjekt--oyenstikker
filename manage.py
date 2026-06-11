@@ -335,6 +335,8 @@ class Doctor:
         """
 
         target_model = "llama3.1:8b"
+        search_string = 'model: str = "phi3:mini"'
+        replace_string = f'model: str = "{target_model}"'
 
         try:
             r = requests.get(
@@ -363,17 +365,17 @@ class Doctor:
         old_line = None
 
         for idx, line in enumerate(lines, start=1):
-            if "phi3:mini" in line:
+            if search_string in line:
                 line_number = idx
                 old_line = line
                 break
 
         if line_number is None:
             raise SystemExit(
-                "Expected model string 'phi3:mini' not found in fuse.py"
+                f"Expected string '{search_string}' not found in fuse.py"
             )
 
-        new_line = old_line.replace("phi3:mini", target_model, 1)
+        new_line = old_line.replace(search_string, replace_string, 1)
 
         restore_tag = self.protect()
 
@@ -393,7 +395,7 @@ class Doctor:
                 print(f"Cancelled. Restore point preserved: {restore_tag}")
                 return
 
-        updated = original.replace("phi3:mini", target_model, 1)
+        updated = original.replace(search_string, replace_string, 1)
         fuse_path.write_text(updated, encoding="utf-8")
 
         print(f"[OK] Default model changed to {target_model}")
