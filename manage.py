@@ -1,0 +1,333 @@
+#!/usr/bin/env python3
+
+import argparse
+import json
+import os
+import socket
+import subprocess
+from pathlib import Path
+
+import requests
+
+ROOT = Path(__file__).resolve().parent
+
+
+class Doctor:
+    def __init__(self, full=False):
+        self.full = full
+        self.results = []
+
+    def add(self, status, component, message):
+        self.results.append({
+            "status": status,
+            "component": component,
+            "message": message,
+        })
+
+    def ok(self, component, message):
+        self.add("OK", component, message)
+
+    def warn(self, component, message):
+        self.add("WARN", component, message)
+
+    def fail(self, component, message):
+        self.add("FAIL", component, message)
+
+    def info(self, component, message):
+        self.add("INFO", component, message)
+
+    def check_port(self, host, port):
+        try:
+            with socket.create_connection((host, port), timeout=3):
+                return True
+        except Exception:
+            return False
+
+    def check_git(self):
+        git_dir = ROOT / ".git"
+        if git_dir.exists():
+            self.ok("git", "Git repository detected")
+        else:
+            self.fail("git", ".git directory missing")
+            return
+
+        try:
+            result = subprocess.run(
+                ["git", "status", "--porcelain"],
+                cwd=ROOT,
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+            if result.stdout.strip():
+                self.warn("git", "Working tree has uncommitted changes")
+            else:
+                self.ok("git", "Working tree clean")
+
+            log = subprocess.run(
+                ["git", "log", "--oneline", "-1"],
+                cwd=ROOT,
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+            if log.stdout.strip():
+                self.ok("git", f"Last commit: {log.stdout.strip()}")
+        except Exception as exc:
+            self.warn("git", f"Unable to inspect git status: {exc}")
+
+    def check_fastapi(self):
+        try:
+            r = requests.get("http://localhost:8000/docs", timeout=3)
+            if r.status_code == 200:
+                self.ok("fastapi", "FastAPI responding on localhost:8000")
+                return
+        except Exception:
+            pass
+
+        if self.check_port("localhost", 8000):
+            self.ok("fastapi", "Port 8000 reachable")
+        else:
+            self.fail("fastapi", "FastAPI not responding on localhost:8000")
+
+    def check_postgres(self):
+        try:
+            import psycopg2
+            conn = psycopg2.connect(
+                host="localhost",
+                port=5432,
+                dbname=os.getenv("POSTGRES_DB", "postgres"),
+                user=os.getenv("POSTGRES_USER", "postgres"),
+                password=os.getenv("POSTGRES_PASSWORD", "postgres"),
+            )
+            cur = conn.cursor()
+
+            cur.execute("SELECT extname FROM pg_extension WHERE extname='vector'")
+            if cur.fetchone():
+                self.ok("pgvector", "pgvector extension installed")
+            else:
+                self.fail("pgvector", "pgvector extension missing")
+
+            cur.execute(
+                "SELECT column_name FROM information_schema.columns WHERE table_name='documents'"
+            )
+            cols = [r[0] for r in cur.fetchall()]
+            if cols:
+                self.ok("postgres", "documents table present")
+                self.info("postgres", f"columns: {', '.join(sorted(cols))}")
+
+                cur.execute("SELECT COUNT(*) FROM documents")
+                count = cur.fetchone()[0]
+                self.ok("postgres", f"documents in knowledge base: {count}")
+            else:
+                self.fail("postgres", "documents table missing")
+
+            conn.close()
+        except Exception as exc:
+            self.fail("postgres", str(exc))
+
+    def check_minio(self):
+        if self.check_port("localhost", 9000):
+            self.ok("minio", "MinIO API reachable on localhost:9000")
+        else:
+            self.fail("minio", "MinIO API unavailable on localhost:9000")
+
+        if self.check_port("localhost", 9001):
+            self.ok("minio", "MinIO console reachable on localhost:9001")
+        else:
+            self.fail("minio", "MinIO console unavailable on localhost:9001")
+
+    def check_watcher(self):
+        watcher = ROOT / "minio_watcher.py"
+        if watcher.exists():
+            self.ok("watcher", "minio_watcher.py present")
+        else:
+            self.fail("watcher", "minio_watcher.py missing")
+
+        try:
+            result = subprocess.run(
+                ["pgrep", "-f", "minio_watcher.py"],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+            if result.stdout.strip():
+                self.ok("watcher", f"Watcher process running (pid {result.stdout.strip()})")
+            else:
+                self.warn("watcher", "Watcher script present but not running")
+        except Exception:
+            self.info("watcher", "Unable to check watcher process status")
+
+    def check_ollama(self):
+        try:
+            r = requests.get("http://localhost:11434/api/tags", timeout=5)
+            data = r.json()
+            models = data.get("models", [])
+            self.ok("ollama", f"Ollama reachable ({len(models)} models installed)")
+
+            names = {m.get("name", "") for m in models}
+            expected = {"llama3.1:8b", "mistral:latest", "phi4-mini:latest", "phi3:mini"}
+            for model in sorted(expected):
+                if model in names:
+                    self.ok("ollama", f"Model present: {model}")
+                else:
+                    self.warn("ollama", f"Model missing: {model}")
+        except Exception as exc:
+            self.fail("ollama", f"Ollama unreachable: {exc}")
+
+    def check_gpu(self):
+        try:
+            import torch
+            if torch.cuda.is_available():
+                name = torch.cuda.get_device_name(0)
+                self.ok("gpu", f"CUDA available — device: {name}")
+                self.info("gpu", "CC 6.1 PyTorch compatibility warnings are non-fatal — do not reinstall PyTorch")
+                return
+            else:
+                self.warn("gpu", "CUDA unavailable via torch — running on CPU")
+                return
+        except Exception as exc:
+            self.warn("gpu", f"torch CUDA check failed: {exc}")
+
+        try:
+            subprocess.run(
+                ["nvidia-smi"],
+                capture_output=True,
+                text=True,
+                timeout=5,
+                check=True,
+            )
+            self.ok("gpu", "GPU detected via nvidia-smi fallback")
+        except Exception:
+            self.fail("gpu", "No GPU detected")
+
+    def check_embeddings(self):
+        try:
+            import sentence_transformers
+            self.ok("embeddings", f"sentence-transformers installed (v{sentence_transformers.__version__})")
+        except Exception as exc:
+            self.fail("embeddings", f"sentence-transformers not installed: {exc}")
+            return
+
+        cache_dir = Path.home() / ".cache" / "torch" / "sentence_transformers"
+        if cache_dir.exists():
+            self.ok("embeddings", f"Model cache found at {cache_dir}")
+        else:
+            self.warn("embeddings", "No sentence-transformers cache found — first run will download model")
+
+        if not self.full:
+            self.info("embeddings", "Deep load skipped (use --full to test model load and embedding dimension)")
+            return
+
+        try:
+            from sentence_transformers import SentenceTransformer
+            model = SentenceTransformer("all-MiniLM-L6-v2")
+            vec = model.encode("test")
+            if len(vec) == 384:
+                self.ok("embeddings", f"Model loaded — embedding dimension: {len(vec)}")
+            else:
+                self.warn("embeddings", f"Unexpected embedding dimension: {len(vec)} (expected 384)")
+        except Exception as exc:
+            self.fail("embeddings", f"Full model load failed: {exc}")
+
+    def check_observability(self):
+        if self.check_port("localhost", 3000):
+            self.ok("grafana", "Grafana reachable on localhost:3000")
+        else:
+            self.warn("grafana", "Grafana unavailable — monitoring stack may not be running")
+
+        if self.check_port("localhost", 3100):
+            self.ok("loki", "Loki reachable on localhost:3100")
+        else:
+            self.warn("loki", "Loki unavailable — monitoring stack may not be running")
+
+    def analyze_failure_modes(self):
+        statuses = {r["component"]: r["status"] for r in self.results}
+
+        if statuses.get("fastapi") == "OK" and statuses.get("ollama") == "FAIL":
+            self.warn("system", "FastAPI responding but Ollama unavailable — /ask endpoint will fail")
+
+        if statuses.get("postgres") == "OK" and statuses.get("pgvector") == "FAIL":
+            self.warn("system", "PostgreSQL healthy but pgvector missing — semantic search unavailable")
+
+        if statuses.get("minio") == "OK" and statuses.get("watcher") == "WARN":
+            self.warn("system", "MinIO healthy but watcher not running — new files will not be auto-ingested")
+
+        if statuses.get("gpu") == "WARN":
+            self.info("system", "Embeddings running on CPU — functional but slower than cuda:0")
+
+    def run(self):
+        self.check_git()
+        self.check_fastapi()
+        self.check_postgres()
+        self.check_minio()
+        self.check_watcher()
+        self.check_ollama()
+        self.check_gpu()
+        self.check_embeddings()
+        self.check_observability()
+        self.analyze_failure_modes()
+
+    def summary(self):
+        fails = [r for r in self.results if r["status"] == "FAIL"]
+        warns = [r for r in self.results if r["status"] == "WARN"]
+        if not fails and not warns:
+            return "HEALTHY", "Tier 1 Readiness: READY"
+        elif not fails:
+            return "DEGRADED", f"Tier 1 Readiness: READY WITH WARNINGS ({len(warns)} warnings)"
+        else:
+            return "UNHEALTHY", f"Tier 1 Readiness: NOT READY ({len(fails)} failures)"
+
+    def print_text(self):
+        print()
+        print("=" * 60)
+        print("  Prosjekt Øyenstikker — Doctor")
+        print("  Read-only diagnostic. No files modified.")
+        print("=" * 60)
+        print()
+
+        for r in self.results:
+            label = f"[{r['status']}]".ljust(7)
+            print(f"  {label} {r['component']}: {r['message']}")
+
+        print()
+        print("=" * 60)
+        status, readiness = self.summary()
+        print(f"  Overall Status: {status}")
+        print(f"  {readiness}")
+        print("=" * 60)
+        print()
+
+    def print_json(self):
+        status, readiness = self.summary()
+        output = {
+            "status": status,
+            "readiness": readiness,
+            "checks": self.results,
+        }
+        print(json.dumps(output, indent=2))
+
+
+def main():
+    parser = argparse.ArgumentParser(prog="manage.py")
+    sub = parser.add_subparsers(dest="command")
+
+    doctor_parser = sub.add_parser("doctor", help="Read-only system diagnostic")
+    doctor_parser.add_argument("--full", action="store_true", help="Include full embedding model load test")
+    doctor_parser.add_argument("--json", action="store_true", help="Output as JSON")
+
+    args = parser.parse_args()
+
+    if args.command == "doctor":
+        d = Doctor(full=args.full)
+        d.run()
+        if args.json:
+            d.print_json()
+        else:
+            d.print_text()
+    else:
+        parser.print_help()
+
+
+if __name__ == "__main__":
+    main()
