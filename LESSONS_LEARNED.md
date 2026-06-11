@@ -15,3 +15,6 @@ Multiple unrelated projects accumulated in the same local directory, leading to 
 ## Static File Serving Order Matters in FastAPI
 
 Mounting a static file handler at the root path intercepts all unmatched routes, including API endpoints defined after the mount call. Resolution: removed the root mount and served the frontend as a standalone HTML file. Lesson: in FastAPI, route specificity and registration order determine which handler wins.
+
+## GPU Inference Runs Through Ollama Not PyTorch
+The GTX 1070 (CC 6.1, 8GB VRAM) cannot execute CUDA kernels via the current PyTorch build (compiled for CC >= 7.5). This produced a misleading error during testing. However, all LLM inference runs through Ollama which uses its own CUDA runtime and fully utilizes the GPU at 81% utilization during generation with 3.6-4.4GB VRAM per model. Do not attempt to fix the PyTorch CC 6.1 warning by reinstalling PyTorch — the load-bearing GPU work is already happening correctly through Ollama. Only one model fits in 8GB VRAM at a time; Ollama handles eviction automatically. PyTorch is only used for the embedding model (all-MiniLM-L6-v2) which runs correctly on CPU as a fallback.

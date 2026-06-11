@@ -167,3 +167,20 @@ Every retrieved document shows its source path and ingestion timestamp alongside
 - [ ] Methods paper — Prosjekt Øyenstikker as open research infrastructure
 - [ ] Zenodo DOI
 - [ ] Full independence from external AI API services
+
+---
+
+## GPU Status — June 11 2026
+
+GTX 1070 (CC 6.1, 8GB VRAM) confirmed working for all Ollama LLM inference via WSL CUDA forwarding:
+
+- llama3.1:8b — ~3.6GB VRAM, 81% GPU utilization during generation
+- phi4-mini — ~3.6GB VRAM, confirmed on GPU
+- mistral 7.2B — ~4.4GB VRAM, confirmed on GPU
+- phi3:mini — assumed on GPU, not explicitly tested
+
+PyTorch embedding model (all-MiniLM-L6-v2) runs on CPU due to CC 6.1 kernel execution failure with current PyTorch build. Non-blocking — embedding speed is not the bottleneck.
+
+Only one model fits in VRAM at a time. Ollama handles load/evict automatically.
+
+These specific models are not permanent. As better open models are released they will replace the current stack. The architecture is model-agnostic — any Ollama-compatible model works without code changes. 3 of 4 models confirmed on GPU is the baseline. Future models should be tested with the nvidia-smi dmon method before being added to the default stack.
