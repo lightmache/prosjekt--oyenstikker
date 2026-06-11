@@ -308,6 +308,84 @@ class Doctor:
         print(json.dumps(output, indent=2))
 
 
+    def backup(self):
+        from datetime import datetime
+
+        status = subprocess.run(
+            ["git", "status", "--porcelain"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+
+        has_changes = bool(status.stdout.strip())
+
+        if has_changes:
+            timestamp = datetime.utcnow().strftime("%Y%m%d-%H%M%S")
+            subprocess.run(["git", "add", "-A"], cwd=ROOT, check=True)
+            subprocess.run(
+                ["git", "commit", "-m", f"restore point: {timestamp}"],
+                cwd=ROOT,
+                check=True,
+            )
+
+        tag = f"backup-{datetime.utcnow().strftime('%Y%m%d-%H%M%S')}"
+        subprocess.run(["git", "tag", tag], cwd=ROOT, check=True)
+        print(f"[OK] Created restore tag: {tag}")
+
+    def restore(self, tag_name=None, force=False, list_only=False):
+        if list_only:
+            result = subprocess.run(
+                ["git", "tag", "--list", "backup-*"],
+                cwd=ROOT,
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            tags = result.stdout.strip()
+            if tags:
+                print(tags)
+            else:
+                print("[INFO] No restore tags found")
+            return
+
+        if not tag_name:
+            raise SystemExit("restore requires a tag name or --list")
+
+        status = subprocess.run(
+            ["git", "status", "--porcelain"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+
+        dirty = bool(status.stdout.strip())
+        if dirty and not force:
+            raise SystemExit(
+                "Working tree is dirty. Commit/stash changes or use --force."
+            )
+
+        verify = subprocess.run(
+            ["git", "rev-parse", "--verify", tag_name],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        )
+        if verify.returncode != 0:
+            raise SystemExit(f"Restore tag not found: {tag_name}")
+
+        subprocess.run(
+            ["git", "switch", "--detach", tag_name],
+            cwd=ROOT,
+            check=True,
+        )
+        print(f"[OK] Restored to {tag_name}")
+        print("[INFO] Repository is now at the tagged snapshot.")
+        print("[INFO] To return to main: git switch main")
+
+
 def main():
     parser = argparse.ArgumentParser(prog="manage.py")
     sub = parser.add_subparsers(dest="command")
@@ -315,6 +393,13 @@ def main():
     doctor_parser = sub.add_parser("doctor", help="Read-only system diagnostic")
     doctor_parser.add_argument("--full", action="store_true", help="Include full embedding model load test")
     doctor_parser.add_argument("--json", action="store_true", help="Output as JSON")
+
+    sub.add_parser("backup", help="Create a tagged restore point")
+
+    restore_parser = sub.add_parser("restore", help="Restore to a tagged restore point")
+    restore_parser.add_argument("tag", nargs="?", help="Tag name to restore to")
+    restore_parser.add_argument("--list", action="store_true", help="List available restore tags")
+    restore_parser.add_argument("--force", action="store_true", help="Restore even if working tree is dirty")
 
     args = parser.parse_args()
 
@@ -325,6 +410,17 @@ def main():
             d.print_json()
         else:
             d.print_text()
+
+    elif args.command == "backup":
+        Doctor().backup()
+
+    elif args.command == "restore":
+        Doctor().restore(
+            tag_name=args.tag,
+            force=args.force,
+            list_only=args.list,
+        )
+
     else:
         parser.print_help()
 
