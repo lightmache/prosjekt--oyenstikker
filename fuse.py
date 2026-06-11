@@ -78,7 +78,7 @@ class ChatMessage(BaseModel):
 
 class Question(BaseModel):
     q: str
-    model: str = "phi3:mini"
+    model: str = "llama3.1:8b"
     length: str = "short"
     session_id: Optional[str] = None
     history: Optional[List[ChatMessage]] = []
