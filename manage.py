@@ -308,6 +308,33 @@ class Doctor:
         print(json.dumps(output, indent=2))
 
 
+    def protect(self):
+        from datetime import datetime
+
+        status = subprocess.run(
+            ["git", "status", "--porcelain"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+
+        has_changes = bool(status.stdout.strip())
+        timestamp = datetime.utcnow().strftime("%Y%m%d-%H%M%S")
+
+        if has_changes:
+            subprocess.run(["git", "add", "-A"], cwd=ROOT, check=True)
+            subprocess.run(
+                ["git", "commit", "-m", f"restore point: {timestamp}"],
+                cwd=ROOT,
+                check=True,
+            )
+
+        tag = f"backup-{timestamp}"
+        subprocess.run(["git", "tag", tag], cwd=ROOT, check=True)
+        print(f"[PROTECT] Restore point created: {tag}")
+        return tag
+
     def backup(self):
         from datetime import datetime
 
