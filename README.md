@@ -83,3 +83,32 @@ Provides:
 terraform init
 terraform apply
 
+
+---
+
+## Prerequisites
+
+### Ollama (Windows, not WSL)
+Ollama runs as a Windows application and is accessible to WSL via localhost forwarding at `http://localhost:11434`.
+
+Required models — pull before starting:
+```bash
+ollama pull mistral
+ollama pull phi4-mini
+ollama pull llama3.1:8b
+ollama pull phi3:mini
+```
+
+### Embedding model
+`all-MiniLM-L6-v2` runs via `sentence-transformers` in the Python venv. No separate install needed beyond `pip install -r requirements.txt`.
+
+### Docker Desktop
+Must be running on Windows before `./start.sh` will work. All services (PostgreSQL, MinIO, Grafana, Loki, Promtail) run as Docker containers.
+
+### Python venv
+```bash
+cd /mnt/d/projects/memory-system
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
