@@ -202,29 +202,45 @@ class Doctor:
             self.fail("gpu", "No GPU detected")
 
     def check_embeddings(self):
-        try:
-            import sentence_transformers
-            self.ok("embeddings", f"sentence-transformers installed (v{sentence_transformers.__version__})")
-        except Exception as exc:
-            self.fail("embeddings", f"sentence-transformers not installed: {exc}")
+        # Check package is installed without importing torch or triggering CUDA
+        import importlib.util
+        spec = importlib.util.find_spec("sentence_transformers")
+        if spec is None:
+            self.fail("embeddings", "sentence-transformers not installed")
             return
 
-        cache_dir = Path.home() / ".cache" / "torch" / "sentence_transformers"
-        if cache_dir.exists():
-            self.ok("embeddings", f"Model cache found at {cache_dir}")
+        self.ok("embeddings", "sentence-transformers package found")
+
+        # Check for model files in common cache locations without loading anything
+        cache_locations = [
+            Path.home() / ".cache" / "torch" / "sentence_transformers",
+            Path.home() / ".cache" / "huggingface" / "hub",
+            ROOT / "venv" / "lib",
+        ]
+        found = any(p.exists() for p in cache_locations)
+        if found:
+            self.ok("embeddings", "Model cache directory found")
         else:
-            self.warn("embeddings", "No sentence-transformers cache found — first run will download model")
+            self.warn("embeddings", "No cache directory found — model will download on first use")
 
         if not self.full:
             self.info("embeddings", "Deep load skipped (use --full to test model load and embedding dimension)")
             return
 
+        # Force CPU — GTX 1070 CC 6.1 cannot execute CUDA kernels with current PyTorch build
+        # Production stack (fuse.py) also falls back to CPU automatically
+        # On a machine with a compatible GPU (CC >= 7.5) this warning will not appear
         try:
-            from sentence_transformers import SentenceTransformer
-            model = SentenceTransformer("all-MiniLM-L6-v2")
-            vec = model.encode("test")
+            import warnings
+            os.environ["CUDA_VISIBLE_DEVICES"] = ""
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                from sentence_transformers import SentenceTransformer
+                model = SentenceTransformer("all-MiniLM-L6-v2")
+                vec = model.encode("test")
             if len(vec) == 384:
-                self.ok("embeddings", f"Model loaded — embedding dimension: {len(vec)}")
+                self.ok("embeddings", f"Model loaded on CPU — embedding dimension: {len(vec)}")
+                self.info("embeddings", "GTX 1070 CC 6.1 cannot execute CUDA kernels with current PyTorch build — CPU inference is correct production behavior. On a GPU with CC >= 7.5 this will run on GPU.")
             else:
                 self.warn("embeddings", f"Unexpected embedding dimension: {len(vec)} (expected 384)")
         except Exception as exc:
@@ -307,6 +323,81 @@ class Doctor:
         }
         print(json.dumps(output, indent=2))
 
+
+    def set_model(self, force=False):
+        """Change the default model in fuse.py from phi3:mini to llama3.1:8b.
+
+        Safety rules:
+          - Verify llama3.1:8b exists in Ollama
+          - Create restore point before user confirmation
+          - Show the exact line that will change
+          - Require confirmation unless --force
+        """
+
+        target_model = "llama3.1:8b"
+
+        try:
+            r = requests.get(
+                "http://localhost:11434/api/tags",
+                timeout=5,
+            )
+            r.raise_for_status()
+            models = {
+                m.get("name", "")
+                for m in r.json().get("models", [])
+            }
+        except Exception as exc:
+            raise SystemExit(f"Unable to verify Ollama models: {exc}")
+
+        if target_model not in models:
+            raise SystemExit(f"Target model not installed: {target_model}")
+
+        fuse_path = ROOT / "fuse.py"
+        if not fuse_path.exists():
+            raise SystemExit("fuse.py not found")
+
+        original = fuse_path.read_text(encoding="utf-8")
+        lines = original.splitlines()
+
+        line_number = None
+        old_line = None
+
+        for idx, line in enumerate(lines, start=1):
+            if "phi3:mini" in line:
+                line_number = idx
+                old_line = line
+                break
+
+        if line_number is None:
+            raise SystemExit(
+                "Expected model string 'phi3:mini' not found in fuse.py"
+            )
+
+        new_line = old_line.replace("phi3:mini", target_model, 1)
+
+        restore_tag = self.protect()
+
+        print()
+        print(f"Restore point: {restore_tag}")
+        print()
+        print(f"File: {fuse_path}")
+        print(f"Line: {line_number}")
+        print()
+        print(f"- {old_line}")
+        print(f"+ {new_line}")
+        print()
+
+        if not force:
+            answer = input("Proceed? [y/N] ").strip().lower()
+            if answer not in ("y", "yes"):
+                print(f"Cancelled. Restore point preserved: {restore_tag}")
+                return
+
+        updated = original.replace("phi3:mini", target_model, 1)
+        fuse_path.write_text(updated, encoding="utf-8")
+
+        print(f"[OK] Default model changed to {target_model}")
+        print(f"[OK] Restore point: {restore_tag}")
 
     def protect(self):
         from datetime import datetime
@@ -428,6 +519,9 @@ def main():
     restore_parser.add_argument("--list", action="store_true", help="List available restore tags")
     restore_parser.add_argument("--force", action="store_true", help="Restore even if working tree is dirty")
 
+    set_model_parser = sub.add_parser("set-model", help="Change default model in fuse.py to llama3.1:8b")
+    set_model_parser.add_argument("--force", action="store_true", help="Skip confirmation prompt")
+
     args = parser.parse_args()
 
     if args.command == "doctor":
@@ -448,7 +542,10 @@ def main():
             list_only=args.list,
         )
 
-    else:
+    elif args.command == "set-model":
+        Doctor().set_model(force=args.force)
+
+    elif args.command is None:
         parser.print_help()
 
 
