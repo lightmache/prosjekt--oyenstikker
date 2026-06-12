@@ -1474,6 +1474,11 @@ setInterval(loadSessions, 30000);
 <div id="status-panel" style="position:fixed;bottom:70px;right:10px;background:#1e1e1e;color:#0f0;font-family:monospace;font-size:11px;padding:10px;border:1px solid #333;border-radius:6px;max-width:300px;z-index:9999;">
   <div style="cursor:pointer;font-weight:bold;" onclick="document.getElementById('status-body').style.display = document.getElementById('status-body').style.display === 'none' ? 'block' : 'none';">⚙ System Status</div>
   <div id="status-body"></div>
+  <div style="margin-top:6px;border-top:1px solid #333;padding-top:6px;">
+    <input id="jobsearch-input" type="text" placeholder="job search query..." style="width:100%;background:#111;color:#0f0;border:1px solid #333;font-family:monospace;font-size:11px;padding:3px;box-sizing:border-box;">
+    <button onclick="runJobSearch()" style="margin-top:3px;width:100%;background:#222;color:#0f0;border:1px solid #333;font-family:monospace;font-size:11px;cursor:pointer;">ask job search</button>
+    <div id="jobsearch-result" style="margin-top:4px;max-height:150px;overflow-y:auto;white-space:pre-wrap;"></div>
+  </div>
 </div>
 <script>
 async function refreshStatusPanel() {
@@ -1494,6 +1499,18 @@ async function refreshStatusPanel() {
 }
 refreshStatusPanel();
 setInterval(refreshStatusPanel, 10000);
+async function runJobSearch() {
+  const q = document.getElementById('jobsearch-input').value;
+  const resultDiv = document.getElementById('jobsearch-result');
+  resultDiv.innerText = 'thinking...';
+  try {
+    const res = await fetch('http://localhost:8001/jobsearch?q=' + encodeURIComponent(q));
+    const data = await res.json();
+    resultDiv.innerText = data.raw_output || JSON.stringify(data);
+  } catch (e) {
+    resultDiv.innerText = 'error: ' + e;
+  }
+}
 </script>
 
 </body>
