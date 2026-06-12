@@ -184,3 +184,4 @@ PyTorch embedding model (all-MiniLM-L6-v2) runs on CPU due to CC 6.1 kernel exec
 Only one model fits in VRAM at a time. Ollama handles load/evict automatically.
 
 These specific models are not permanent. As better open models are released they will replace the current stack. The architecture is model-agnostic — any Ollama-compatible model works without code changes. 3 of 4 models confirmed on GPU is the baseline. Future models should be tested with the nvidia-smi dmon method before being added to the default stack.
+
