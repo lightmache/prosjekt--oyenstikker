@@ -132,7 +132,7 @@ Every retrieved document shows its source path and ingestion timestamp alongside
 - [x] `manage.py start` replaces start.sh with full redundancy
 - [ ] Preventative warnings before destructive operations
 - [x] Bucket scoping — domain-tagged ingestion, isolated retrieval (job_search_ask.py)
-- [ ] Reduce top_k to 1 for value-anchored queries
+- [x] Reduce top_k to 2 for /ask retrieval (reduces gravity well competition, preserves cross-table join capability)
 - [x] Auto-ingest working code snippets on every git commit (.git/hooks/post-commit, bucket: infrastructure)
 
 ### Tier 4 — Side panel

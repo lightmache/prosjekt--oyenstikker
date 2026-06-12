@@ -191,7 +191,7 @@ def ask(question: Question):
         embedding = model.encode(question.q).tolist()
         cur = conn.cursor()
         cur.execute(
-            "SELECT content FROM documents ORDER BY embedding <-> %s LIMIT 3",
+            "SELECT content FROM documents ORDER BY embedding <-> %s LIMIT 2",
             (str(embedding),)
         )
         results = cur.fetchall()
