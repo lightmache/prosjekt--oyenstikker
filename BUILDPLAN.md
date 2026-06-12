@@ -114,7 +114,7 @@ Every retrieved document shows its source path and ingestion timestamp alongside
 
 ### Tier 1 — Protect what works
 - [ ] `manage.py` with auto-git-commit before any file modification
-- [ ] Tagged restore points — `manage.py backup` and `manage.py restore`
+- [x] Tagged restore points — `manage.py backup` and `manage.py restore`
 - [x] `manage.py doctor` — checks all services, GPU status, warns on known failure modes
 - [x] Ingest LESSONS_LEARNED.md and all working commands into Øyenstikker (5 lessons ingested, bucket: infrastructure)
 - [x] Document GPU warning permanently — handled by manage.py doctor (INFO message, non-fatal CC 6.1 warning)
