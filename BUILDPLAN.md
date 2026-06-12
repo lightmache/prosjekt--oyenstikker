@@ -117,7 +117,7 @@ Every retrieved document shows its source path and ingestion timestamp alongside
 - [ ] Tagged restore points — `manage.py backup` and `manage.py restore`
 - [ ] `manage.py doctor` — checks all services, GPU status, warns on known failure modes
 - [x] Ingest LESSONS_LEARNED.md and all working commands into Øyenstikker (5 lessons ingested, bucket: infrastructure)
-- [ ] Document GPU warning permanently — GTX 1070 CC 6.1 warnings are non-fatal, cuda:0 is active, do not reinstall PyTorch
+- [x] Document GPU warning permanently — handled by manage.py doctor (INFO message, non-fatal CC 6.1 warning)
 - [ ] Change default model in fuse.py from phi3:mini to llama3.1:8b
 
 ### Tier 2 — Motor data pipeline
