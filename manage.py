@@ -5,6 +5,7 @@ import json
 import os
 import socket
 import subprocess
+import time
 from pathlib import Path
 
 import requests
@@ -506,6 +507,72 @@ class Doctor:
         print("[INFO] To return to main: git switch main")
 
 
+def cmd_start():
+    print()
+    print("  ── Øyenstikker ──────────────────────────")
+
+    result = subprocess.run(["docker", "compose", "ps", "--status", "running"],
+                             cwd=ROOT, capture_output=True, text=True)
+    if "postgres" in result.stdout:
+        print("  ✓ postgres already running")
+    else:
+        print("  ▸ starting postgres...")
+        subprocess.run(["docker", "compose", "up", "-d"], cwd=ROOT, capture_output=True)
+        print("  ▸ waiting for database...")
+        for _ in range(20):
+            r = subprocess.run(
+                ["docker", "exec", "memory-system-postgres-1", "pg_isready", "-U", "postgres", "-q"],
+                capture_output=True)
+            if r.returncode == 0:
+                break
+            time.sleep(1)
+        print("  ✓ database ready")
+
+    mon_file = ROOT / "monitoring" / "docker-compose.monitoring.yml"
+    result = subprocess.run(["docker", "compose", "-f", str(mon_file), "ps", "--status", "running"],
+                             cwd=ROOT, capture_output=True, text=True)
+    if "grafana" in result.stdout:
+        print("  ✓ monitoring already running")
+    else:
+        print("  ▸ starting monitoring stack...")
+        subprocess.run(["docker", "compose", "-f", str(mon_file), "up", "-d"],
+                        cwd=ROOT, capture_output=True)
+        print("  ✓ grafana at http://localhost:3000")
+
+    pgrep = subprocess.run(["pgrep", "-f", "minio_watcher.py"], capture_output=True, text=True)
+    if pgrep.stdout.strip():
+        pid = pgrep.stdout.strip().split("\n")[0]
+        print(f"  ✓ minio watcher already running (pid {pid})")
+    else:
+        print("  ▸ starting minio watcher...")
+        logs_dir = ROOT / "logs"
+        logs_dir.mkdir(exist_ok=True)
+        log_file = open(logs_dir / "watcher.log", "a")
+        proc = subprocess.Popen(["python3", "minio_watcher.py"], cwd=ROOT,
+                                  stdout=log_file, stderr=subprocess.STDOUT)
+        print(f"  ✓ watcher running (pid {proc.pid}), logs at logs/watcher.log")
+
+    try:
+        r = requests.get("http://localhost:8000/openapi.json", timeout=2)
+        api_up = r.status_code == 200
+    except Exception:
+        api_up = False
+
+    if api_up:
+        print("  ✓ API already running at http://localhost:8000")
+        print("  ─────────────────────────────────────────")
+        print()
+        print("  everything already up — nothing to start")
+        print()
+    else:
+        print("  ▸ starting API on http://localhost:8000")
+        print("  ─────────────────────────────────────────")
+        print()
+        print("  ctrl+c to stop API (watcher and monitoring keep running)")
+        print()
+        subprocess.run(["uvicorn", "fuse:app", "--host", "0.0.0.0", "--port", "8000", "--reload"], cwd=ROOT)
+
+
 def main():
     parser = argparse.ArgumentParser(prog="manage.py")
     sub = parser.add_subparsers(dest="command")
@@ -524,9 +591,13 @@ def main():
     set_model_parser = sub.add_parser("set-model", help="Change default model in fuse.py to llama3.1:8b")
     set_model_parser.add_argument("--force", action="store_true", help="Skip confirmation prompt")
 
+    sub.add_parser("start", help="Start all services (postgres, monitoring, watcher, API)")
+
     args = parser.parse_args()
 
-    if args.command == "doctor":
+    if args.command == "start":
+        cmd_start()
+    elif args.command == "doctor":
         d = Doctor(full=args.full)
         d.run()
         if args.json:
