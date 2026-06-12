@@ -553,7 +553,7 @@ def cmd_start():
         print(f"  ✓ watcher running (pid {proc.pid}), logs at logs/watcher.log")
 
     try:
-        r = requests.get("http://localhost:8000/openapi.json", timeout=2)
+        r = requests.get("http://localhost:8000/docs", timeout=2)
         api_up = r.status_code == 200
     except Exception:
         api_up = False
