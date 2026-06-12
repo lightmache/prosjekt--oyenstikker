@@ -115,10 +115,10 @@ Every retrieved document shows its source path and ingestion timestamp alongside
 ### Tier 1 — Protect what works
 - [ ] `manage.py` with auto-git-commit before any file modification
 - [ ] Tagged restore points — `manage.py backup` and `manage.py restore`
-- [ ] `manage.py doctor` — checks all services, GPU status, warns on known failure modes
+- [x] `manage.py doctor` — checks all services, GPU status, warns on known failure modes
 - [x] Ingest LESSONS_LEARNED.md and all working commands into Øyenstikker (5 lessons ingested, bucket: infrastructure)
 - [x] Document GPU warning permanently — handled by manage.py doctor (INFO message, non-fatal CC 6.1 warning)
-- [ ] Change default model in fuse.py from phi3:mini to llama3.1:8b
+- [x] Change default model in fuse.py from phi3:mini to llama3.1:8b
 
 ### Tier 2 — Motor data pipeline
 - [ ] Standard ingest file format for brushless motor test runs
@@ -129,9 +129,9 @@ Every retrieved document shows its source path and ingestion timestamp alongside
 - [ ] Ingest every bug fix as a lessons learned entry
 
 ### Tier 3 — Make it brainless
-- [ ] `manage.py start` replaces start.sh with full redundancy
+- [x] `manage.py start` replaces start.sh with full redundancy
 - [ ] Preventative warnings before destructive operations
-- [ ] Bucket scoping — domain-tagged ingestion, isolated retrieval
+- [x] Bucket scoping — domain-tagged ingestion, isolated retrieval (job_search_ask.py)
 - [ ] Reduce top_k to 1 for value-anchored queries
 - [x] Auto-ingest working code snippets on every git commit (.git/hooks/post-commit, bucket: infrastructure)
 
