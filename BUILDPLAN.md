@@ -116,7 +116,7 @@ Every retrieved document shows its source path and ingestion timestamp alongside
 - [ ] `manage.py` with auto-git-commit before any file modification
 - [ ] Tagged restore points — `manage.py backup` and `manage.py restore`
 - [ ] `manage.py doctor` — checks all services, GPU status, warns on known failure modes
-- [ ] Ingest LESSONS_LEARNED.md and all working commands into Øyenstikker
+- [x] Ingest LESSONS_LEARNED.md and all working commands into Øyenstikker (5 lessons ingested, bucket: infrastructure)
 - [ ] Document GPU warning permanently — GTX 1070 CC 6.1 warnings are non-fatal, cuda:0 is active, do not reinstall PyTorch
 - [ ] Change default model in fuse.py from phi3:mini to llama3.1:8b
 
