@@ -133,7 +133,7 @@ Every retrieved document shows its source path and ingestion timestamp alongside
 - [ ] Preventative warnings before destructive operations
 - [ ] Bucket scoping — domain-tagged ingestion, isolated retrieval
 - [ ] Reduce top_k to 1 for value-anchored queries
-- [ ] Auto-ingest working code snippets on every git commit
+- [x] Auto-ingest working code snippets on every git commit (.git/hooks/post-commit, bucket: infrastructure)
 
 ### Tier 4 — Side panel
 - [ ] Side terminal panel — status, warnings, guidance, read-only
