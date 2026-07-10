@@ -6,8 +6,10 @@ datasources:
     access: proxy
     url: http://loki:3100
     isDefault: true
-  - name: yesoreyeram-infinity-datasource
+
+  - name: Infinity
     type: yesoreyeram-infinity-datasource
+    access: proxy
     jsonData:
       allowedHosts:
-        - "docs.google.com"
+        - "https://docs.google.com"
