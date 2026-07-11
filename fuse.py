@@ -1,6 +1,7 @@
 import logging
 import os
 import json
+import hashlib
 import uuid
 import requests
 import psycopg2
@@ -137,6 +138,9 @@ def get_session(session_id: str):
 
 @app.post("/ingest")
 def ingest(doc: Document):
+    checksum = hashlib.sha256(doc.content.encode()).hexdigest()
+    doc.metadata["checksum"] = checksum
+    doc.metadata["checksum_algorithm"] = "sha256"
     embedding = model.encode(doc.content).tolist()
     cur = conn.cursor()
     cur.execute(
@@ -144,7 +148,7 @@ def ingest(doc: Document):
         (doc.content, str(embedding), json.dumps(doc.metadata))
     )
     conn.commit()
-    return {"status": "ok"}
+    return {"status": "ok", "checksum": checksum}
 
 @app.get("/search")
 def search(q: str, k: int = 5):
