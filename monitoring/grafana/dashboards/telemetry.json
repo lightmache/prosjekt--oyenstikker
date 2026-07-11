@@ -1,0 +1,164 @@
+{
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 1,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "PD0067CAD9A63E081" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 2 },
+          "unit": "celsius"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "none" }
+      },
+      "targets": [
+        {
+          "columns": [
+            { "selector": "timestamp", "text": "Time", "type": "timestamp_epoch_s" },
+            { "selector": "water_temp_c", "text": "water_temp_c", "type": "number" }
+          ],
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "PD0067CAD9A63E081" },
+          "format": "timeseries",
+          "parser": "backend",
+          "refId": "A",
+          "source": "url",
+          "type": "csv",
+          "uql": "parse-csv",
+          "url": "https://docs.google.com/spreadsheets/d/e/2PACX-1vSVD_CKx_PgYNRtw8f1hujOp9MeILggX0KPbR2TZfE3PNaEH2NJ9lQ5nAx8ps1teRPfmoYbY00pHFnz/pub?output=csv"
+        }
+      ],
+      "title": "Brew Temperature (°C)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "PD0067CAD9A63E081" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 2 }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "id": 2,
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "none" }
+      },
+      "targets": [
+        {
+          "columns": [
+            { "selector": "timestamp", "text": "Time", "type": "timestamp_epoch_s" },
+            { "selector": "pressure_bar", "text": "pressure_bar", "type": "number" }
+          ],
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "PD0067CAD9A63E081" },
+          "format": "timeseries",
+          "parser": "backend",
+          "refId": "A",
+          "source": "url",
+          "type": "csv",
+          "uql": "parse-csv",
+          "url": "https://docs.google.com/spreadsheets/d/e/2PACX-1vSVD_CKx_PgYNRtw8f1hujOp9MeILggX0KPbR2TZfE3PNaEH2NJ9lQ5nAx8ps1teRPfmoYbY00pHFnz/pub?output=csv"
+        }
+      ],
+      "title": "Pump Pressure (bar)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "PD0067CAD9A63E081" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 2 },
+          "unit": "watt"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "id": 3,
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "none" }
+      },
+      "targets": [
+        {
+          "columns": [
+            { "selector": "timestamp", "text": "Time", "type": "timestamp_epoch_s" },
+            { "selector": "power_w", "text": "power_w", "type": "number" }
+          ],
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "PD0067CAD9A63E081" },
+          "format": "timeseries",
+          "parser": "backend",
+          "refId": "A",
+          "source": "url",
+          "type": "csv",
+          "uql": "parse-csv",
+          "url": "https://docs.google.com/spreadsheets/d/e/2PACX-1vSVD_CKx_PgYNRtw8f1hujOp9MeILggX0KPbR2TZfE3PNaEH2NJ9lQ5nAx8ps1teRPfmoYbY00pHFnz/pub?output=csv"
+        }
+      ],
+      "title": "Power Draw (W)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "PD0067CAD9A63E081" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 2 },
+          "unit": "percent",
+          "max": 100,
+          "min": 0
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "id": 4,
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "none" }
+      },
+      "targets": [
+        {
+          "columns": [
+            { "selector": "timestamp", "text": "Time", "type": "timestamp_epoch_s" },
+            { "selector": "water_level_pct", "text": "water_level_pct", "type": "number" }
+          ],
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "PD0067CAD9A63E081" },
+          "format": "timeseries",
+          "parser": "backend",
+          "refId": "A",
+          "source": "url",
+          "type": "csv",
+          "uql": "parse-csv",
+          "url": "https://docs.google.com/spreadsheets/d/e/2PACX-1vSVD_CKx_PgYNRtw8f1hujOp9MeILggX0KPbR2TZfE3PNaEH2NJ9lQ5nAx8ps1teRPfmoYbY00pHFnz/pub?output=csv"
+        }
+      ],
+      "title": "Water Reservoir (%)",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "5s",
+  "liveNow": true,
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": [],
+  "templating": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Coffee Telemetry",
+  "uid": "coffee-telemetry",
+  "version": 3,
+  "weekStart": ""
+}

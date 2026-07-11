@@ -1,4 +1,3 @@
-version: "3.9"
 services:
   loki:
     image: grafana/loki:2.9.0
@@ -9,7 +8,6 @@ services:
       - lokidata:/loki
     command: -config.file=/etc/loki/local-config.yaml
     restart: unless-stopped
-
   grafana:
     image: grafana/grafana:10.0.0
     ports:
@@ -17,11 +15,13 @@ services:
     volumes:
       - grafanadata:/var/lib/grafana
       - ./grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+      - ./grafana/dashboard-provider.yml:/etc/grafana/provisioning/dashboards/dashboard-provider.yml
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
     environment:
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
       GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_INSTALL_PLUGINS: "yesoreyeram-infinity-datasource"
     restart: unless-stopped
-
   promtail:
     image: grafana/promtail:2.9.0
     volumes:
@@ -29,7 +29,6 @@ services:
       - ../logs:/logs
     command: -config.file=/etc/promtail/config.yml
     restart: unless-stopped
-
 volumes:
   lokidata:
   grafanadata:
