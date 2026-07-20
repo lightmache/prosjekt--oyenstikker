@@ -221,3 +221,9 @@ terraform/terraform.tfstate
 terraform/terraform.tfstate.backup
 terraform/*.tfvars
 sessions/
+grafana_password.txt
+newkeyJuly2026.txt
+
+# NASA OSD dataset — local data, not part of system architecture
+OSD-412_metadata_OSD-412-ISA.zip
+OSD-412_metadata_OSD-412-ISA/

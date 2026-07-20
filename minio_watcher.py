@@ -2,6 +2,7 @@ import time
 import boto3
 import requests
 import os
+import json
 from botocore.client import Config
 from dotenv import load_dotenv
 
@@ -23,7 +24,17 @@ s3 = boto3.client(
     region_name="us-east-1"
 )
 
-seen = set()
+SEEN_FILE = "watcher_seen.json"
+
+def load_seen():
+    if os.path.exists(SEEN_FILE):
+        with open(SEEN_FILE) as f:
+            return set(json.load(f))
+    return set()
+
+def save_seen(seen):
+    with open(SEEN_FILE, "w") as f:
+        json.dump(list(seen), f)
 
 def get_objects():
     try:
@@ -52,6 +63,8 @@ def ingest_object(key):
 
 def watch():
     print(f"watching bucket: {BUCKET} every {POLL_INTERVAL}s")
+    seen = load_seen()
+    print(f"loaded {len(seen)} previously-seen objects")
     while True:
         objects = get_objects()
         for key in objects:
@@ -59,6 +72,7 @@ def watch():
                 print(f"new object detected: {key}")
                 ingest_object(key)
                 seen.add(key)
+                save_seen(seen)
         time.sleep(POLL_INTERVAL)
 
 if __name__ == "__main__":
